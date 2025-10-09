@@ -1,0 +1,258 @@
+ /*#050010;        fondo principal */
+  /*#0B0018;     secciones o cards */
+  /*#B0B0B5;     /texto principal */
+  /*#2A2A2E;   texto atenuado */
+ /*#6A0DAD;            botones, links */
+  /*#3D2C8D;        hover/acento */
+  /*#F2F2F7;       texto sobre fondos oscuros */
+ /*#5A4C66;       lila grisaceo */
+
+body {
+     user-select: none;
+  margin: 0;
+  padding: 0;
+    font-family: Arial, sans-serif;
+    background: #050010;
+    color: #B0B0B5;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.2rem;
+    background-color: #0B0018;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: small;
+}
+
+.header h1{
+  padding: 5px 15px 0px 5px;
+
+}
+/* =============================== */
+/* 1. Registro y Login  */
+/* =============================== */
+
+/* =============================== */
+/* 2.MAIN - TODOS LOS JUEGOS */
+/* =============================== */
+
+.container {
+    padding: 1em;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.container h2 {
+    text-align:left;
+    margin-bottom: 1.5rem;
+}
+
+.principales {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.game {
+    position: relative;
+    width: 300px;
+    height: 400px;
+    background: #0B0018;
+    border-radius: 10px;
+    margin: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.game img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;         
+  display: block; 
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.game img:hover {
+  transform: scale(1.05);     
+  opacity: 0.9;
+}
+
+.stats {
+    position: absolute;
+    display: flex;
+  top: 0;                     
+  left: 0;
+  width: 100%;
+  justify-content: space-around;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  color:#F2F2F7;
+  background-color: #5A4C66;
+   font-weight: 500;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  opacity: 0.8;
+}
+
+.stats span {
+    display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.linea{
+    border:none;
+    height: 2px;
+    background-color: #5A4C66;
+    margin: 20px 0;
+}
+
+/* TODO SOBRE EL JUEGO */
+/* =============================== */
+/* 3. GAME PARTICULAR */
+/* =============================== */
+
+.game-page {
+  display: grid;
+  grid-template-columns: 250px 1fr 200px;
+  gap: 30px;
+}
+
+.poster {
+   position: relative;
+    background: #0B0018;
+    border-radius: 10px;
+    margin: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;         
+  display: block; 
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.info-section h1 {
+  font-size: 2rem;
+  margin-bottom: 0.2em;
+}
+
+.info-section .year {
+  font-weight: normal;
+  font-size: 1rem;
+  color: #8A7D96;
+}
+
+.info-section .director a {
+  color: #6E5F7A;
+  text-decoration: none;
+}
+
+.info-section .tagline {
+  font-style: italic;
+  color: #B0B0B5;
+  margin-top: 10px;
+}
+
+.info-section .synopsis {
+  margin-top: 15px;
+  line-height: 1.5;
+}
+
+/* acciones */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 10px;
+}
+
+.actions button {
+  background: #5A4C66;
+  color: #F2F2F7;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #3D2C8D;
+}
+
+.rate span {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+
+.reviews-section {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0px;
+  padding: 10px;
+   gap: 20px;
+   align-items: center;
+   justify-content: space-between; 
+}
+.review {
+  background-color: #1a1a1a; 
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  overflow: hidden; 
+  max-width: 300px;
+  flex-basis: calc(50% - 10px);
+  flex-basis: 50%; 
+    flex-shrink: 0; 
+    flex-grow: 0;
+    flex: 0 0 50%; 
+}
+.review2{
+  background-color: blue; 
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  overflow: hidden; 
+  max-width: 300px;
+  flex-basis: calc(50% - 10px);
+  flex-basis: 50%; 
+    flex-shrink: 0; 
+    flex-grow: 0;
+    flex: 0 0 50%; 
+}
+
+.review p{
+    text-align: justify;
+}
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.review-header img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+
+
+
+/* =============================== */
+/* 0. Responsive -  */
+/* =============================== *
