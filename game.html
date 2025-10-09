@@ -12,6 +12,11 @@
             <img src="logo.png" alt="logo">
         </div>
         <h1>Gamerlog</h1>
+        <div class="search-wrapper">
+        <label for="searchInput" class="visually-hidden">Buscar juegos</label>
+        <input id="searchInput" type="search" placeholder="Buscar juegos, etiquetas, géneros..." aria-label="Buscar juegos" autocomplete="off" />
+        <div id="searchHint" class="search-hint" aria-live="polite"></div>
+          </div>
     </header>
 
     <section class="game-page">
@@ -31,9 +36,15 @@
     
     <div class="info-section">
       <h1>Nombre del juego <span class="year">2025</span></h1>
-      <p class="desarrollador">Plataformas: PlayStation 5, Nintendo Switch, Windows, macOS, Linux</p>
-      
-      <p class="tagline">Desarrollado por el estudio independiente australiano Team Cherry.</p>
+  
+      <div class="tags-container">
+        <span class="tag">Metroidvania</span>
+        <span class ="tag"> 2D</span>
+      </div>
+
+      <p class="Plataformas">Plataformas: PlayStation 5, Nintendo Switch, Windows, macOS, Linux</p>
+
+      <p class="desarrollador">Desarrollado por el estudio independiente australiano Team Cherry.</p>
       <p class="synopsis">
         Silksong's story follows Hallownest's former princess-protector, Hornet, 
         after she is captured and transported to the unfamiliar land of Pharloom. 
@@ -41,6 +52,7 @@
         traverse platforming challenges, and complete quests using various skills, tools, and movement mechanics
       </p>
     </div>
+      
 
     <aside class="actions">
         <div class="rate">
@@ -52,8 +64,8 @@
     </aside>
   
 </section>
-<hr class="linea">
-     <h2>Reseñas</h2>
+      <hr class="linea">
+     <h2 class="titulo">Reseñas</h2>
 <section class="reviews-section">
     
         <div class="review">
@@ -65,7 +77,7 @@
                 Voy a intentar ser lo más neutral posible para analizar el juego 
                 pero hay experiencias que las he vivido de una manera y para cada uno será distinto</p>
          </div>       
-        <div class="review2">
+        <div class="review">
             <div class="review-header">
                 <img src="images/img.jpeg" alt="reviewer">
                 <h3>Reviewer</h3>
