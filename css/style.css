@@ -77,6 +77,107 @@ body {
 /* 1. Registro y Login  */
 /* =============================== */
 
+
+/* formato modal registro */
+.modal {
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #1a1a1a;
+  color: #F2F2F7;
+  padding: 1.5em 2em;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  min-width: 320px;
+  max-width: 350px;
+  width: 100%;
+  position: relative;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 1.5em;
+  color: #B0B0B5;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close:hover {
+  color: #F2F2F7;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.modal-content input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #5A4C66;
+  background: #0B0018;
+  color: #F2F2F7;
+  font-size: 1em;
+}
+
+.modal-content button {
+  background: #6A0DAD;
+  color: #F2F2F7;
+  border: none;
+  padding: 10px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.modal-content button:hover {
+  background: #3D2C8D;
+}
+
+
+/* formato login */
+.login-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: 16px;
+}
+.login-form input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #5A4C66;
+  background: #0B0018;
+  color: #F2F2F7;
+  font-size: 0.95em;
+  width: 120px;
+}
+.login-form button {
+  background: #6A0DAD;
+  color: #F2F2F7;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.login-form button:hover {
+  background: #3D2C8D;
+}
+
+
+
 /* =============================== */
 /* 2.MAIN - TODOS LOS JUEGOS */
 /* =============================== */
@@ -304,6 +405,7 @@ overflow: hidden;
   border-radius: 50%;
   object-fit: cover;
 }
+
 
 
 
