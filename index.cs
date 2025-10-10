@@ -107,7 +107,7 @@ app.MapGet("/games", async (HttpContext context) =>
     if (string.IsNullOrWhiteSpace(query))
     {
         // Juegos populares por defecto
-        url = $"https://api.rawg.io/api/games?key={apiKey}&ordering=-rating";
+        url = $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true";
     }
     else
     {
