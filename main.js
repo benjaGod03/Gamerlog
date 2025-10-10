@@ -25,3 +25,29 @@ document.getElementById('cancelLogin').onclick = function(e) {
     document.getElementById('showLogin').style.display = 'inline-block';
     document.getElementById('openModal').style.display = 'inline-block';
 };
+
+
+document.getElementById('loginForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const Usuario = document.getElementById('loginUser').value;
+    const Contrasena = document.getElementById('loginPass').value;
+
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Usuario, Contrasena })
+    });
+
+    if (response.ok) {
+        // Login exitoso
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('showLogin').style.display = 'inline-block';
+        document.getElementById('openModal').style.display = 'inline-block';
+        // Aquí puedes redirigir o mostrar contenido protegido
+    } else {
+        // Error de login
+        // Si tienes un div con id="loginError", muéstralo aquí
+        // document.getElementById('loginError').style.display = 'block';
+        alert("Usuario o contraseña incorrectos");
+    }
+};
