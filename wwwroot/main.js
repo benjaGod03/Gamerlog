@@ -103,7 +103,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         gamesList.innerHTML = "";
 
         if (data.results && data.results.length > 0) {
-            data.results.slice(0, 8).forEach(game => {
+            data.results.slice(0, 40).forEach(game => {
                 const gameDiv = document.createElement('div');
                 gameDiv.className = 'game';
                 gameDiv.style.cursor = 'pointer';
