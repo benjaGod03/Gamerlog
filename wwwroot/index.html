@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamerlog</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png" alt="logo">
+        </div>
+        <h1>Gamerlog</h1>
+        <a href="#" id="showLogin" class="clickeable">Iniciar Sesión </a>
+        <a href="#" id="openModal" class="clickeable">Registrarse </a>
+        <form id="loginForm" class="login-form" style="display:none;">
+        <input type="text" id="loginUser" placeholder="Usuario" required>
+        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <button type="submit" class="btn">Entrar</button>
+        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancelar</a>
+    </form>
+    <div class="search-wrapper">
+        <label for="searchInput" class="visually-hidden">Buscar juegos</label>
+        <input id="searchInput" type="search" placeholder="Buscar juegos, etiquetas, géneros..." aria-label="Buscar juegos" autocomplete="off" />
+        <div id="searchHint" class="search-hint" aria-live="polite"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Juegos populares</h2>
+         <hr class="linea">
+        <div class="principales" id="gamesList">
+            <!-- Aquí se insertarán los juegos populares dinámicamente -->
+        </div>
+        </div>
+    </div>
+
+     
+    <!-- MODAL REGISTRO -->
+    
+    <div id="modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <h2>Registro</h2>
+    <form id="registerForm">
+    <div class="form-group username">
+        <input type="text" id="registerUser" name="username" required placeholder="">
+        <label for="registerUser">Nombre de usuario:</label>
+    </div>
+    <div class="form-group email">
+        <input type="email" id="registerEmail" name="email" required placeholder="">
+        <label for="registerEmail">Correo electrónico:</label>
+    </div>
+    <div class="form-group password">
+        <input type="password" id="registerPass" name="password" required placeholder="">
+        <label for="registerPass">Contraseña:</label>
+    </div>
+    <button type="submit" class="btn">Registrarse</button>
+    </form>
+  </div>
+</div>
+
+     
+    
+
+  <script src="main.js"></script>
+</body>
+</html>
