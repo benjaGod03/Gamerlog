@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gamerlog</title>
+    <link rel="icon" href="images/logo.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header class="header">
         <div class="logo">
-            <img src="logo.png" alt="logo">
+            <img src="images/logo.png" alt="logo" class="logo-img">
         </div>
-        <h1>Gamerlog</h1>
+        <h1>amerlog</h1>
         <a href="#" id="showLogin" class="clickeable">Iniciar Sesión </a>
         <a href="#" id="openModal" class="clickeable">Registrarse </a>
+
+        <span id="userDisplay" class="clickeable"></span>
+
+        
         <form id="loginForm" class="login-form" style="display:none;">
         <input type="text" id="loginUser" placeholder="Usuario" required>
         <input type="password" id="loginPass" placeholder="Contraseña" required>
@@ -30,7 +35,7 @@
    <section class="game-page">
         <div class="poster-section">
             <div class="poster">
-                <img src="images/img.jpeg" alt="juego" id="gameImage" >
+                <img src="images/img.png" alt="juego" id="gameImage" >
                 
                 <div class="stats">
                     <span id="gameRating">✰</span>
@@ -62,7 +67,10 @@
     <section class="reviews-section" id="reviewsSection">
         <div id="reviewList"></div>
     </section>
+
+    <script src="main.js"></script>
     <script src="game.js"></script>
+    
 </body>
 </html>
       

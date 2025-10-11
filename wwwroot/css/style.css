@@ -1,4 +1,4 @@
- /*#050010;        fondo principal */
+ /*#050010;        violeta oscuro */
   /*#0B0018;     secciones o cards */
   /*#B0B0B5;     /texto principal */
   /*#2A2A2E;   texto atenuado */
@@ -8,27 +8,47 @@
  /*#5A4C66;       lila grisaceo */
  /*#150043;       violeta fuerte */
  /*#A176FF;       lila claro */
+ /*#382F46;       fondo principal */
+ /*#2C2340;       fondo header */
+ /*#1F192B;       fondo body */
 
 body {
-     user-select: none;
+  user-select: none;
   margin: 0;
   padding: 0;
-    font-family: Arial, sans-serif;
-    background: #050010;
-    color: #B0B0B5;
-    min-height: 100vh;
-    overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  background: #1F192B;
+  color: #B0B0B5;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.2rem;
-    background-color: #0B0018;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: small;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.2rem;
+  background-color: #2C2340;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: small;
 }
+
+.header .logo {
+  width: 50px;
+  height: 50px;
+  
+}
+
+.header .logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header h1{
+  padding: 5px 15px 0px 5px
+}
+
 .visually-hidden {
   position: absolute !important;
   height: 1px; 
@@ -71,10 +91,6 @@ body {
 }
 
 
-.header h1{
-  padding: 5px 15px 0px 5px;
-
-}
 /* =============================== */
 /* 1. Registro y Login  */
 /* =============================== */
@@ -224,26 +240,26 @@ body {
 }
 
 .principales {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: center; 
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center; 
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
 .game-popular {
   justify-content: center;
-  gap: 20px;
+  gap: 1.5rem;
   position: relative;
   width: 300px;
-  height: 250px;
+  height: 200px;
   background: #0B0018;
   border-radius: 15px;
   margin: 1.5rem;
    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  padding: 0 0 20px 0;
+  padding: 0px 0px 20px 0px;
  
 }
 
@@ -265,7 +281,7 @@ body {
   margin: 1rem;
    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  padding: 0 0 20px 0;
+  padding: 0 0 15px 0;
 }
 
 .game-image {
