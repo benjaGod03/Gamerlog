@@ -12,7 +12,7 @@ var app = builder.Build();
 app.UseDefaultFiles(); // Sirve index.html por defecto
 app.UseStaticFiles();  // Sirve archivos estáticos (html, js, css, imágenes)
 
-string connectionString = "Server=DESKTOP-6R4GSNU\\SQLEXPRESS;Database=Gamerlog;Trusted_Connection=True;TrustServerCertificate=True;";
+string connectionString = "Server=DESKTOP-6R4GSNU\\SQLEXPRESS;Database=Gamerlog;Uid=candela;Pwd=1234;TrustServerCertificate=True;";
 
 app.MapPost("/login", async (HttpContext context) =>
 {
@@ -111,7 +111,7 @@ app.MapGet("/games", async (HttpContext context) =>
     }
     else
     {
-        url = $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}";
+        url = $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=40";
     }
 
     using var httpClient = new HttpClient();
