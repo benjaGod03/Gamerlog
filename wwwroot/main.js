@@ -12,6 +12,26 @@ window.onclick = function(event) {
   }
 };
 
+function actualizarEscenario(usuario) {
+    const loginBtn = document.getElementById('showLogin');
+    const registerBtn = document.getElementById('openModal');
+    const userDisplay = document.getElementById('userDisplay');
+
+    if (usuario) {
+        // Usuario logueado
+        loginBtn.style.display = 'none';
+        registerBtn.style.display = 'none';
+        userDisplay.style.display = 'inline-block';
+        userDisplay.textContent = `👤 ${usuario}`;
+    } else {
+        // Usuario no logueado
+        loginBtn.style.display = 'inline-block';
+        registerBtn.style.display = 'inline-block';
+        userDisplay.style.display = 'none';
+    }
+}
+
+
 //mostrar login
 document.getElementById('showLogin').onclick = function(e) {
     e.preventDefault();
@@ -39,11 +59,11 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     });
 
     if (response.ok) {
+        localStorage.setItem('usuario', Usuario);
+        actualizarEscenario(Usuario);
         // Login exitoso
         document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('showLogin').style.display = 'inline-block';
-        document.getElementById('openModal').style.display = 'inline-block';
-        // Aquí puedes redirigir o mostrar contenido protegido
+        
     } else {
         // Error de login
         // Si tienes un div con id="loginError", muéstralo aquí
@@ -73,6 +93,7 @@ document.getElementById('registerForm').onsubmit = async function(e) {
     else { alert("Error en el registro. Inténtalo de nuevo."); }
     
 };
+
 
 document.getElementById('searchInput').addEventListener('keydown', async function(e) {
     if (e.key === 'Enter') {
