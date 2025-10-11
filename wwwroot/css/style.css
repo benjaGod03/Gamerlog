@@ -207,52 +207,84 @@ body {
 /* =============================== */
 
 .container {
-    padding: 1em;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 2em;
+    margin: 50px;
 }
 
 .container h2 {
-    text-align:left;
-    margin-bottom: 1.5rem;
+  text-align:left;
+  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  color: #EAE2F8;
+  font-size: 1.8rem;
+  font-weight: 600;
+  border-left: 4px solid #8e44ad;
+  padding-left: 10px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .principales {
     flex-wrap: wrap;
-    justify-content: space-between;
+    align-items: flex-start;
+    justify-content: center; 
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
 }
 
-.game {
-    position: relative;
-    width: 300px;
-    height: 400px;
-    background: #0B0018;
-    border-radius: 10px;
-    margin: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+.game-popular {
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  width: 300px;
+  height: 250px;
+  background: #0B0018;
+  border-radius: 15px;
+  margin: 1.5rem;
+   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: 0 0 20px 0;
+ 
 }
 
-.game img {
+.extras {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+
+.games {
+  position: relative;
+  width: 250px;
+  height: 150px;
+  background: linear-gradient(145deg, #0B0018, #1a0f2a);
+  border-radius: 12px;
+  margin: 1rem;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  padding: 0 0 20px 0;
+}
+
+.game-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;         
+  object-fit:cover;         
   display: block; 
   cursor: pointer;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.game img:hover {
+.game-image:hover {
   transform: scale(1.05);     
   opacity: 0.9;
 }
 
 .stats {
-    position: absolute;
-    display: flex;
+  position: absolute;
+  display: flex;
   top: 0;                     
   left: 0;
   width: 100%;
@@ -260,7 +292,7 @@ body {
   padding: 0.5rem;
   font-size: 0.8rem;
   color:#F2F2F7;
-  background-color: #5A4C66;
+  background: linear-gradient(145deg, #5A4C66, rgba(90, 76, 102, 0.8));
    font-weight: 500;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
@@ -278,6 +310,7 @@ body {
     height: 2px;
     background-color: #5A4C66;
     margin: 20px 0;
+     border-radius: 1px;
 }
 
 /* TODO SOBRE EL JUEGO */
@@ -287,18 +320,20 @@ body {
 
 .game-page {
   display: grid;
-  grid-template-columns: 250px 1fr 200px;
+  grid-template-columns: 400px 1fr 250px;
   gap: 30px;
 }
 
 .poster {
-   position: relative;
-    background: #0B0018;
-    border-radius: 10px;
-    margin: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    margin-bottom: 3rem;
+  position: relative;
+  background: #0B0018;
+  border-radius: 10px;
+  margin: 40px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  width: 350px;
+  height: 250px;
 }
 
 .poster img {
@@ -321,7 +356,8 @@ body {
   color: #8A7D96;
 }
 
-.info-section .tags-container {
+.tags-container {
+  margin: 40px;
   display: flex;
   flex-wrap: wrap; 
   gap: 6px;
@@ -331,7 +367,7 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 
-.info-section .tag {
+.tag {
   background-color: #9A70C6; 
   color: #F2F2F7;
   border: 1px solid #633D84;
@@ -409,6 +445,47 @@ body {
 /* 4. RESEÑAS */
 /* =============================== */
 
+.dejar-reseña {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  margin: 20px auto;
+  padding: 10px;
+  background: linear-gradient(145deg, #0B0018, #12002b);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  
+}
+
+.dejar-reseña .texto {
+  width: 90%;
+  height: 100px;
+  padding: 10px 12px;
+  border: 3px solid #5A4C66;
+  border-radius: 5px;
+  resize: none;              
+  font-size: 16px;
+  box-sizing: border-box;
+  color:#EAE2F8;
+  background-color: rgba(26, 19, 41, 0.9);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+.dejar-reseña .texto:focus {
+  outline: none;
+  border-color: #A176FF;
+  box-shadow: 0 0 4px #A176FF;
+}
+
+.dejar-reseña .btn {
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+
+
 .reviews-section {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -419,8 +496,12 @@ body {
   justify-content: center; 
 }
 
+#reviewList {
+  display: contents; 
+}
+
 .review{
-background-color: #1a1a1a;
+background: linear-gradient(145deg, #1a1a1a, #232030);
 padding: 15px;
 border-radius: 10px;
 box-shadow: 0 4px 10px rgba(0,0,0,0.3);
