@@ -80,19 +80,35 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
         const query = this.value.trim();
         if (query.length === 0) return;
 
-        // Llama al backend
+        // Llama a tu backend
         const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
         if (response.ok) {
+            const data = await response.json();
+            // Aquí puedes mostrar los resultados en pantalla
+            console.log(data); // Por ahora, solo muestra en consola
+            // Ejemplo: document.getElementById('searchHint').textContent = data.results[0]?.name || 'Sin resultados';
+        } else {
+            alert("Error al buscar juegos");
+        }
+    }
+});
+
+window.addEventListener('DOMContentLoaded', async function() {
+    const gamesList = document.getElementById('gamesList');
+    gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
+
+    const response = await fetch('/games?search=');
+    if (response.ok) {
         const data = await response.json();
         gamesList.innerHTML = "";
 
         if (data.results && data.results.length > 0) {
-            data.results.slice(0, 10).forEach(game => {
+            data.results.slice(0, 4).forEach(game => {
                 const gameDiv = document.createElement('div');
-                gameDiv.className = 'game';
+                gameDiv.className = 'game-popular';
                 gameDiv.style.cursor = 'pointer';
                 gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}">
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
                         <span>✰ ${game.rating}</span>
                         <span>💬 ${game.reviews_count || 0}</span>
@@ -106,19 +122,17 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
                 };
                 gamesList.appendChild(gameDiv);
             });
+           
         } else {
             gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
         }
-        } else {
-            alert("Error al buscar juegos");
-        }
+    } else {
+        gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
     }
 });
 
-
-// Mostrar juegos populares al cargar la página
 window.addEventListener('DOMContentLoaded', async function() {
-    const gamesList = document.getElementById('gamesList');
+    const gamesList = document.getElementById('games-sec');
     gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
 
     const response = await fetch('/games?search=');
@@ -127,12 +141,13 @@ window.addEventListener('DOMContentLoaded', async function() {
         gamesList.innerHTML = "";
 
         if (data.results && data.results.length > 0) {
-            data.results.slice(0, 40).forEach(game => {
+            
+            data.results.slice(5, 40).forEach(game => {
                 const gameDiv = document.createElement('div');
-                gameDiv.className = 'game';
+                gameDiv.className = 'games';
                 gameDiv.style.cursor = 'pointer';
                 gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}">
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
                         <span>✰ ${game.rating}</span>
                         <span>💬 ${game.reviews_count || 0}</span>
@@ -153,3 +168,9 @@ window.addEventListener('DOMContentLoaded', async function() {
         gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
     }
 });
+
+
+
+
+
+

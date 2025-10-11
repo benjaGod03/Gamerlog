@@ -30,16 +30,18 @@
    <section class="game-page">
         <div class="poster-section">
             <div class="poster">
-                <img src="images/img.jpeg" alt="juego" id="gameImage">
+                <img src="images/img.jpeg" alt="juego" id="gameImage" >
+                
                 <div class="stats">
                     <span id="gameRating">✰</span>
                     <span id="gameReviews">💬</span>
                 </div>
             </div>
+            <div class="tags-container" id="gameTags"></div>
         </div>
         <div class="info-section">
             <h1 id="gameTitle"></h1>
-            <div class="tags-container" id="gameTags"></div>
+            
             <p class="Plataformas" id="gamePlatforms"></p>
             <p class="desarrollador" id="gameDevelopers"></p>
             <p class="synopsis" id="gameSynopsis"></p>
@@ -53,67 +55,15 @@
     </section>
     <hr class="linea">
     <h2 class="titulo">Reseñas</h2>
+    <div class="dejar-reseña">
+        <textarea id="reviewText" class="texto" placeholder="Escribí tu reseña aquí..."></textarea>
+        <button onclick="agregarReseña()" class="btn" id=""saveReview>Publicar Reseña</button>
+        </div>
     <section class="reviews-section" id="reviewsSection">
-        <!-- Aquí irán las reseñas dinámicas -->
+        <div id="reviewList"></div>
     </section>
+    <script src="game.js"></script>
 </body>
 </html>
       
 
-<script>
-window.addEventListener('DOMContentLoaded', async function() {
-    const gameId = localStorage.getItem('selectedGameId');
-    if (!gameId) {
-        document.body.innerHTML = "<p>No se seleccionó ningún juego.</p>";
-        return;
-    }
-
-    // Llama a tu backend para obtener detalles del juego
-    const response = await fetch(`/game?id=${encodeURIComponent(gameId)}`);
-    if (response.ok) {
-        const game = await response.json();
-
-        // Imagen
-        document.getElementById('gameImage').src = game.background_image || 'images/img.jpeg';
-        document.getElementById('gameImage').alt = game.name || 'Juego';
-
-        // Título y año
-        document.getElementById('gameTitle').innerHTML = `${game.name || ''} <span class="year">${(game.released || '').split('-')[0] || ''}</span>`;
-
-        // Tags
-        const tagsContainer = document.getElementById('gameTags');
-        tagsContainer.innerHTML = '';
-        if (game.tags && game.tags.length > 0) {
-            game.tags.slice(0, 5).forEach(tag => {
-                const span = document.createElement('span');
-                span.className = 'tag';
-                span.textContent = tag.name;
-                tagsContainer.appendChild(span);
-            });
-        }
-
-        // Plataformas
-        document.getElementById('gamePlatforms').textContent = "Plataformas: " + (game.platforms ? game.platforms.map(p => p.platform.name).join(', ') : '');
-
-        // Desarrolladores
-        document.getElementById('gameDevelopers').textContent = "Desarrollador: " + (game.developers ? game.developers.map(d => d.name).join(', ') : '');
-
-        // Sinopsis
-        document.getElementById('gameSynopsis').textContent = game.description_raw || '';
-
-        // Rating y reviews
-        document.getElementById('gameRating').textContent = `✰ ${game.rating || 0}`;
-        document.getElementById('gameReviews').textContent = `💬 ${game.reviews_count || 0}`;
-
-        // Estrellas (rating visual)
-        const stars = document.getElementById('gameStars');
-        stars.innerHTML = '';
-        const rating = Math.round(game.rating || 0);
-        for (let i = 0; i < 5; i++) {
-            stars.innerHTML += i < rating ? '⭐' : '✰';
-        }
-    } else {
-        document.body.innerHTML = "<p>Error al cargar los detalles del juego.</p>";
-    }
-});
-</script>
