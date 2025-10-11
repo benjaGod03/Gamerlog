@@ -94,7 +94,6 @@ document.getElementById('registerForm').onsubmit = async function(e) {
     
 };
 
-
 document.getElementById('searchInput').addEventListener('keydown', async function(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -105,14 +104,38 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
         const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
         if (response.ok) {
             const data = await response.json();
-            // Aquí puedes mostrar los resultados en pantalla
-            console.log(data); // Por ahora, solo muestra en consola
-            // Ejemplo: document.getElementById('searchHint').textContent = data.results[0]?.name || 'Sin resultados';
+        gamesList.innerHTML = "";
+
+        if (data.results && data.results.length > 0) {
+            data.results.slice(0, 10).forEach(game => {
+                const gameDiv = document.createElement('div');
+                gameDiv.className = 'game';
+                gameDiv.style.cursor = 'pointer';
+                gameDiv.innerHTML = `
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}">
+                    <div class="stats">
+                        <span>✰ ${game.rating}</span>
+                        <span>💬 ${game.reviews_count || 0}</span>
+                    </div>
+                    <div class="game-title">${game.name}</div>
+                `;
+                // Al hacer clic, guarda el ID en localStorage y redirige
+                gameDiv.onclick = function() {
+                    localStorage.setItem('selectedGameId', game.id);
+                    window.location.href = 'game.html';
+                };
+                gamesList.appendChild(gameDiv);
+            });
+        } else {
+            gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
+        }
         } else {
             alert("Error al buscar juegos");
         }
     }
 });
+
+
 
 window.addEventListener('DOMContentLoaded', async function() {
     const gamesList = document.getElementById('gamesList');
