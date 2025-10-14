@@ -546,8 +546,80 @@ overflow: hidden;
 
 
 
+/* =============================== */
+/* 0. Menu hambuerguesa */
+/* =============================== */
+#userDisplay {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+}
+
+
+.menu-options {
+    display: none;
+    position: absolute;
+    top: 10%;        
+    transform: translateX(-50%);
+    background-color: #1F192B;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1000;
+    min-width: 150px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.menu-options a {
+    display: block;
+    padding: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.menu-options a:hover {
+    background-color: #302745;
+}
+
+.menu-options.show {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+
 
 
 /* =============================== */
-/* 0. Responsive -  */
-/* =============================== *
+/* 0. Rating -  */
+/* =============================== */
+.rating {
+    unicode-bidi: bidi-override;
+    direction: rtl; /* Para que las estrellas se alineen de derecha a izquierda (5 a 1) */
+    text-align: center;
+    font-size: 30px; /* Tamaño de las estrellas */
+    display: inline-block; /* Ocupa solo el espacio necesario */
+}
+
+.rating > .star {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    color: #ccc; /* Color por defecto */
+    transition: color 0.2s;
+}
+
+/* Estilo para las estrellas seleccionadas */
+.rating > .star.selected,
+.rating > .star:hover,
+.rating > .star:hover ~ .star {
+    color: gold; /* Color de la selección/hover */
+}
+
+/* Estilo para mostrar la calificación en las reseñas cargadas */
+.review-rating {
+    color: gold;
+    font-size: 20px;
+}

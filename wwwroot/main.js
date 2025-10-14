@@ -16,6 +16,7 @@ function actualizarEscenario(usuario) {
     const loginBtn = document.getElementById('showLogin');
     const registerBtn = document.getElementById('openModal');
     const userDisplay = document.getElementById('userDisplay');
+     const menuOptions = document.getElementById('menuOptions');
 
     if (usuario) {
         // Usuario logueado
@@ -28,6 +29,7 @@ function actualizarEscenario(usuario) {
         loginBtn.style.display = 'inline-block';
         registerBtn.style.display = 'inline-block';
         userDisplay.style.display = 'none';
+        menuOptions.classList.remove('show');
     }
 }
 
@@ -112,7 +114,7 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
                 gameDiv.className = 'game';
                 gameDiv.style.cursor = 'pointer';
                 gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}">
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
                         <span>✰ ${game.rating}</span>
                         <span>💬 ${game.reviews_count || 0}</span>
@@ -214,6 +216,30 @@ window.addEventListener('DOMContentLoaded', async function() {
 });
 
 
+const userDisplay = document.getElementById('userDisplay');
+const menuOptions = document.getElementById('menuOptions');
+const cerrarSesion = document.getElementById('cerrarSesion');
+
+// Alternar el menú al hacer clic en el usuario
+userDisplay.addEventListener('click', (e) => {
+    e.stopPropagation(); // evita que el click cierre el menú inmediatamente
+    menuOptions.classList.toggle('show');
+});
+
+// Cerrar el menú si se hace clic fuera
+window.addEventListener('click', (e) => {
+    if (!userDisplay.contains(e.target)) {
+        menuOptions.classList.remove('show');
+    }
+});
+
+// Cerrar sesión
+cerrarSesion.addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('usuario');
+    menuOptions.classList.remove('show');
+    actualizarEscenario(null);
+});
 
 
 

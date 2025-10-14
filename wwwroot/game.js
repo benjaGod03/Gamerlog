@@ -56,6 +56,31 @@ window.addEventListener('DOMContentLoaded', async function() {
 });
 
 
+let ratingSeleccionado = 0;
+
+// Configurar interacción con las estrellas
+document.addEventListener('DOMContentLoaded', () => {
+  const estrellas = document.querySelectorAll('.star');
+  
+  estrellas.forEach(estrella => {
+    estrella.addEventListener('click', () => {
+      ratingSeleccionado = parseInt(estrella.getAttribute('data-value'));
+      
+      // quitar selección previa
+      estrellas.forEach(e => e.classList.remove('selected'));
+      // marcar las nuevas
+      estrella.classList.add('selected');
+      let anterior = estrella.nextElementSibling;
+      while (anterior) {
+        anterior.classList.add('selected');
+        anterior = anterior.nextElementSibling;
+      }
+    });
+  });
+});
+
+
+
 
 // Referencias a los elementos
 // Obtener elementos del HTML
@@ -124,15 +149,23 @@ function mostrarReseñaEnDOM(texto, fecha, usuario) {
     const nuevaReseña = document.createElement('div');
     nuevaReseña.classList.add('review');
 
+     // Mostrar estrellas según el ratingSeleccionado actual
+  const estrellasHTML = ratingSeleccionado > 0
+    ? '★'.repeat(ratingSeleccionado) + '☆'.repeat(5 - ratingSeleccionado)
+    : '— sin calificación —';
+
     nuevaReseña.innerHTML = `
         <p class="review-text">${texto}</p>
         <div class="review-footer">
             <span class="review-date">Publicado por ${usuario} el ${fechaHoraTexto}</span>
+            <span class="review-rating">Valoración: ${estrellasHTML}</span>
         </div>
     `;
 
     // Insertar al inicio o al final (depende de tu diseño)
     contenedor.appendChild(nuevaReseña); 
+ ratingSeleccionado = 0;
+  document.querySelectorAll('.star').forEach(e => e.classList.remove('selected'));
 }
 
 async function cargarReseñas(gameID) {

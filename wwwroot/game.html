@@ -61,9 +61,17 @@
     <hr class="linea">
     <h2 class="titulo">Reseñas</h2>
     <div class="dejar-reseña">
-        <textarea id="reviewText" class="texto" placeholder="Escribí tu reseña aquí..."></textarea>
-        <button onclick="agregarReseña()" class="btn" id=""saveReview>Publicar Reseña</button>
+        <div class="rating" id="rating-stars">
+            <span class="star" data-value="5">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="1">★</span>
         </div>
+        <textarea id="reviewText" class="texto" placeholder="Escribí tu reseña aquí..."></textarea>
+        <button onclick="agregarReseña()" class="btn" id="saveReview">Publicar Reseña</button>
+        </div>
+        
     <section class="reviews-section" id="reviewsSection">
         <div id="reviewList"></div>
     </section>
