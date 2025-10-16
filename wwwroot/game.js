@@ -39,13 +39,13 @@ window.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('gameSynopsis').textContent = game.description_raw || '';
 
         // Rating y reviews
-        document.getElementById('gameRating').textContent = `✰ ${game.rating || 0}`;
-        document.getElementById('gameReviews').textContent = `💬 ${game.reviews_count || 0}`;
+        document.getElementById('gameRating').textContent = `✰ ${game.PromCalificacion || 0}`;
+        document.getElementById('gameReviews').textContent = `💬 ${game.CantidadResenas || 0}`;
 
         // Estrellas (rating visual)
         const stars = document.getElementById('gameStars');
         stars.innerHTML = '';
-        const rating = Math.round(game.rating || 0);
+        const rating = Math.round(game.PromCalificacion || 0);
         for (let i = 0; i < 5; i++) {
             stars.innerHTML += i < rating ? '⭐' : '✰';
         }
@@ -56,16 +56,18 @@ window.addEventListener('DOMContentLoaded', async function() {
 });
 
 
-let ratingSeleccionado = 0;
 
 // Configurar interacción con las estrellas
 document.addEventListener('DOMContentLoaded', () => {
   const estrellas = document.querySelectorAll('.star');
+  const starsContainer = document.getElementById('rating-stars'); 
+  starsContainer.dataset.rating = starsContainer.dataset.rating || "0";
   
   estrellas.forEach(estrella => {
     estrella.addEventListener('click', () => {
-      ratingSeleccionado = parseInt(estrella.getAttribute('data-value'));
+        const value = parseInt(estrella.getAttribute('data-value'), 10);
       
+      starsContainer.dataset.rating = String(value);
       // quitar selección previa
       estrellas.forEach(e => e.classList.remove('selected'));
       // marcar las nuevas
@@ -90,6 +92,9 @@ async function agregarReseña() {
   const texto = document.getElementById('reviewText').value.trim();
   let gameIdString = localStorage.getItem('selectedGameId');
   const gameId = parseInt(gameIdString, 10);
+  const rating = parseInt(document.getElementById('rating-stars').dataset.rating || "0", 10);
+
+  console.log("Rating:", rating); // Depuración
 
   if (texto === "") {
     alert("No podés publicar una reseña vacía.");
@@ -99,7 +104,7 @@ async function agregarReseña() {
   const datosReseña = {
     texto: texto,
     juego: gameId,
-    
+    rating: rating
   }
 
       try {
@@ -119,7 +124,7 @@ async function agregarReseña() {
             const reseñaGuardada = await response.json(); 
             
             // 6. Actualizar el DOM con los datos confirmados del servidor
-            mostrarReseñaEnDOM(reseñaGuardada.texto, reseñaGuardada.fecha, reseñaGuardada.usuario);
+            mostrarReseñaEnDOM(reseñaGuardada.texto, reseñaGuardada.fecha, reseñaGuardada.usuario, reseñaGuardada.rating);
             
             // Limpiar textarea
             reviewTextarea.value = "";
@@ -137,7 +142,7 @@ async function agregarReseña() {
     }
 }
 
-function mostrarReseñaEnDOM(texto, fecha, usuario) {
+function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
     const contenedor = document.getElementById('reviewList');
     
     // Formatear la fecha recibida del servidor (que viene como string ISO)
@@ -164,7 +169,6 @@ function mostrarReseñaEnDOM(texto, fecha, usuario) {
 
     // Insertar al inicio o al final (depende de tu diseño)
     contenedor.appendChild(nuevaReseña); 
- ratingSeleccionado = 0;
   document.querySelectorAll('.star').forEach(e => e.classList.remove('selected'));
 }
 
@@ -181,7 +185,7 @@ async function cargarReseñas(gameID) {
 
             // 💡 2. Iterar sobre la lista de reseñas recibidas
             reseñas.forEach(reseña => {
-                mostrarReseñaEnDOM(reseña.Texto, reseña.Fecha, reseña.Usuario);
+                mostrarReseñaEnDOM(reseña.Texto, reseña.Fecha, reseña.Usuario, reseña.Rating);
             });
 
         } else if (response.status === 404) {
