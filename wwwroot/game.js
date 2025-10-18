@@ -5,19 +5,19 @@ window.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // Llama a tu backend para obtener detalles del juego
+    // llama a tu backend para obtener detalles del juego
     const response = await fetch(`/game?id=${encodeURIComponent(gameId)}`);
     if (response.ok) {
         const game = await response.json();
 
-        // Imagen
+        // imagen
         document.getElementById('gameImage').src = game.background_image || 'images/img.jpeg';
         document.getElementById('gameImage').alt = game.name || 'Juego';
 
-        // Título y año
+        // título y año
         document.getElementById('gameTitle').innerHTML = `${game.name || ''} <span class="year">${(game.released || '').split('-')[0] || ''}</span>`;
 
-        // Tags
+        // tags
         const tagsContainer = document.getElementById('gameTags');
         tagsContainer.innerHTML = '';
         if (game.tags && game.tags.length > 0) {
@@ -29,20 +29,21 @@ window.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
-        // Plataformas
+        // plataformas
         document.getElementById('gamePlatforms').textContent = "Plataformas: " + (game.platforms ? game.platforms.map(p => p.platform.name).join(', ') : '');
 
-        // Desarrolladores
+        // desarrolladores
         document.getElementById('gameDevelopers').textContent = "Desarrollador: " + (game.developers ? game.developers.map(d => d.name).join(', ') : '');
 
-        // Sinopsis
+        // sinopsis
         document.getElementById('gameSynopsis').textContent = game.description_raw || '';
+        setupSynopsisToggle();
 
-        // Rating y reviews
+        // rating y reviews
         document.getElementById('gameRating').textContent = `✰ ${game.PromCalificacion || 0}`;
         document.getElementById('gameReviews').textContent = `💬 ${game.CantidadResenas || 0}`;
 
-        // Estrellas (rating visual)
+        // estrellas 
         const stars = document.getElementById('gameStars');
         stars.innerHTML = '';
         const rating = Math.round(game.PromCalificacion || 0);
@@ -55,9 +56,41 @@ window.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+function setupSynopsisToggle() {
+  const synopsisElement = document.getElementById('gameSynopsis');
+  const toggleBtn = document.getElementById('toggleSynopsisBtn');
+  
+  // Altura máxima en píxeles (debe coincidir con el CSS)
+  const maxHeight = 110; 
+
+  // Oculta el botón por defecto para empezar de cero
+  toggleBtn.style.display = 'none';
+
+  // Comprueba si el contenido es más alto que el límite establecido
+  if (synopsisElement.scrollHeight > maxHeight) {
+    // Si es más largo, lo colapsa y muestra el botón
+    synopsisElement.classList.add('collapsed');
+    toggleBtn.style.display = 'block';
+    toggleBtn.textContent = 'Mostrar Más'; // Asegura el texto inicial
+  }
+
+  // Agrega el evento de clic al botón (si se mostró)
+  toggleBtn.addEventListener('click', () => {
+    if (synopsisElement.classList.contains('collapsed')) {
+      // Expande el texto
+      synopsisElement.classList.remove('collapsed');
+      toggleBtn.textContent = 'Mostrar Menos';
+    } else {
+      // Colapsa el texto
+      synopsisElement.classList.add('collapsed');
+      toggleBtn.textContent = 'Mostrar Más';
+    }
+  });
+}
 
 
-// Configurar interacción con las estrellas
+
+// configurar interacción con las estrellas
 document.addEventListener('DOMContentLoaded', () => {
   const estrellas = document.querySelectorAll('.star');
   const starsContainer = document.getElementById('rating-stars'); 
@@ -82,10 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
-
-// Referencias a los elementos
-// Obtener elementos del HTML
 async function agregarReseña() {
   const contenedor = document.getElementById('reviewList');
     const reviewTextarea = document.getElementById('reviewText');
@@ -94,7 +123,7 @@ async function agregarReseña() {
   const gameId = parseInt(gameIdString, 10);
   const rating = parseInt(document.getElementById('rating-stars').dataset.rating || "0", 10);
 
-  console.log("Rating:", rating); // Depuración
+  console.log("Rating:", rating); // depuración
 
   if (texto === "") {
     alert("No podés publicar una reseña vacía.");
@@ -108,31 +137,29 @@ async function agregarReseña() {
   }
 
       try {
-        // 4. Solicitud POST al backend (ASP.NET Core)
         const response = await fetch('review', {
             method: 'POST',
-            // No necesitas credenciales extra; la Cookie se envía automáticamente
             headers: {
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify(datosReseña) 
         });
 
-        // 5. Manejar la respuesta
+        
         if (response.ok) {
-            // El servidor respondió 200/201. Debería devolver la reseña completa.
+            
             const reseñaGuardada = await response.json(); 
             
-            // 6. Actualizar el DOM con los datos confirmados del servidor
+            // actualizar el DOM con los datos 
             mostrarReseñaEnDOM(reseñaGuardada.texto, reseñaGuardada.fecha, reseñaGuardada.usuario, reseñaGuardada.rating);
             
-            // Limpiar textarea
+            // limpiar textarea
             reviewTextarea.value = "";
             
         } else if (response.status === 401) {
             alert("Debes iniciar sesión para publicar una reseña.");
         } else {
-            // Manejar otros errores (400, 500, etc.)
+            // manejar otros errores 
             alert("Error al guardar la reseña en el servidor.");
         }
 
@@ -145,7 +172,7 @@ async function agregarReseña() {
 function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
     const contenedor = document.getElementById('reviewList');
     
-    // Formatear la fecha recibida del servidor (que viene como string ISO)
+    // formatear la fecha
     const fechaHora = new Date(fecha);
     const fechaTexto = fechaHora.toLocaleDateString();
     const horaTexto = fechaHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -154,20 +181,23 @@ function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
     const nuevaReseña = document.createElement('div');
     nuevaReseña.classList.add('review');
 
-     // Mostrar estrellas según el ratingSeleccionado actual
+     // mostrar estrellas según el ratingSeleccionado actual
   const estrellasHTML = ratingSeleccionado > 0
     ? '★'.repeat(ratingSeleccionado) + '☆'.repeat(5 - ratingSeleccionado)
     : '— sin calificación —';
 
     nuevaReseña.innerHTML = `
+        <div class="review-header">
+            <span class="review-username">${usuario}</span>
+            <span class="review-rating">${estrellasHTML}</span>
+        </div>
         <p class="review-text">${texto}</p>
-        <div class="review-footer">
-            <span class="review-date">Publicado por ${usuario} el ${fechaHoraTexto}</span>
-            <span class="review-rating">Valoración: ${estrellasHTML}</span>
+         <div class="review-footer">
+            <span class="review-date">${fechaHoraTexto}</span>
         </div>
     `;
 
-    // Insertar al inicio o al final (depende de tu diseño)
+    
     contenedor.appendChild(nuevaReseña); 
   document.querySelectorAll('.star').forEach(e => e.classList.remove('selected'));
 }
@@ -179,18 +209,17 @@ async function cargarReseñas(gameID) {
         if (response.ok) {
             const reseñas = await response.json();
             
-            // 💡 1. Limpiar el contenedor antes de cargar nuevas reseñas (opcional)
+            
             const contenedor = document.getElementById('reviewList');
             contenedor.innerHTML = ''; 
 
-            // 💡 2. Iterar sobre la lista de reseñas recibidas
+            
             reseñas.forEach(reseña => {
                 mostrarReseñaEnDOM(reseña.Texto, reseña.Fecha, reseña.Usuario, reseña.Rating);
             });
 
         } else if (response.status === 404) {
             console.warn("No se encontraron reseñas para este juego.");
-            // Podrías mostrar un mensaje de "Sé el primero en comentar"
         } else {
             console.error(`Error al cargar reseñas: ${response.status}`);
         }
