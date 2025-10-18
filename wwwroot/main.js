@@ -104,14 +104,18 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
 
         // Llama a tu backend
         const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
+        const listTitle = document.getElementById('listTitle');
+        const gamesList = document.getElementById('gamesList');
+
         if (response.ok) {
             const data = await response.json();
         gamesList.innerHTML = "";
 
         if (data.results && data.results.length > 0) {
+            listTitle.textContent = `Resultados para: "${query}"`;
             data.results.slice(0, 10).forEach(game => {
                 const gameDiv = document.createElement('div');
-                gameDiv.className = 'game';
+                gameDiv.className = 'game-popular';
                 gameDiv.style.cursor = 'pointer';
                 gameDiv.innerHTML = `
                     <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">

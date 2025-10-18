@@ -59,11 +59,26 @@ body {
 }
 
 /* buscador */
+#listTitle {
+  color: #EAE2F8;
+  font-size: 1.8rem; /* 28px aprox. */
+  font-weight: 600;
+  
+  /* Borde decorativo a la izquierda */
+  border-left: 5px solid #A176FF; /* Usando tu color de acento principal */
+  padding-left: 15px;
+  
+  /* Márgenes para espaciado */
+  margin-top: 20px;
+  margin-bottom: 25px; 
+}
 .search-wrapper {
-  display: flex;
+  display: relative;
+  width: 100%;
+  max-width: 480px;
   gap: 8px;
   align-items: center;
-  margin: 20px;
+  margin: 20px 0;
 }
 
 #searchInput {
@@ -71,11 +86,15 @@ body {
   max-width: 480px;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #7B6C8C; 
-  background: #F2F2F7;
-  color: #050010;;
+  border: 1px solid #4A3F55;
+  background-color: #1F1733;
+  color: #F2F2F7;
   font-size: 0.85rem;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#searchInput::placeholder {
+  color: #888099; 
 }
 
 #searchInput:focus {
@@ -224,7 +243,11 @@ body {
 
 .container {
     padding: 2em;
-    margin: 50px;
+    margin: 0 50px;
+    padding-top: 100px;
+    padding-bottom: 2em;
+  padding-left: 2em;
+  padding-right: 2em;
 }
 
 .container h2 {
@@ -376,17 +399,16 @@ body {
   margin: 40px;
   display: flex;
   flex-wrap: wrap; 
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.2); 
+  gap: 6px; 
   padding: 2px;
   border-radius: 6px;
   font-family: 'Segoe UI', sans-serif;
 }
 
 .tag {
-  background-color: #9A70C6; 
+  background-color: #2C2340; 
   color: #F2F2F7;
-  border: 1px solid #633D84;
+  border: 1px solid #4A3F55;
   border-radius: 9px;
   padding: 4px 10px;
   font-size: 11px;
@@ -394,7 +416,9 @@ body {
   transition: background 0.2s, color 0.2s;
 }
 
-
+.tag:hover {
+  border-color: #A176FF;
+}
 
 .info-section .director a {
   color: #6E5F7A;
@@ -410,6 +434,40 @@ body {
 .info-section .synopsis {
   margin-top: 15px;
   line-height: 1.5;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.5s ease-in-out;
+}
+.info-section .synopsis.collapsed {
+  max-height: 140px; 
+}
+
+.info-section .synopsis.collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(to top, #1A1329, transparent); /* Usa tu color de fondo principal */
+}
+
+
+/* botón "mostrar mas" */
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  color: #B0B0B5;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.toggle-btn:hover {
+  color: #C6ADFF; 
 }
 
 /* acciones */
@@ -427,10 +485,16 @@ body {
   padding: 8px 10px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn:hover{
   background: #3D2C8D;
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0); /* Vuelve a su posición original al hacer clic */
+  background-color: #5A4C66;
 }
 
 .rate span {
@@ -465,42 +529,81 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   width: 80%;
-  margin: 20px auto;
-  padding: 10px;
-  background: linear-gradient(145deg, #0B0018, #12002b);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  margin: 40px auto;
+  padding: 5px 20px;
+  background:#12002b;
+  border-radius: 16px;
+  border: 1px solid #3a2d4c;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   
 }
 
 .dejar-reseña .texto {
-  width: 90%;
-  height: 100px;
-  padding: 10px 12px;
-  border: 3px solid #5A4C66;
-  border-radius: 5px;
-  resize: none;              
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 14px;
+  border: 1px solid #4a3f55;
+  border-radius: 8px;
+  resize: vertical;              
   font-size: 16px;
   box-sizing: border-box;
   color:#EAE2F8;
-  background-color: rgba(26, 19, 41, 0.9);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+  background-color: #1F1733;
+  box-shadow: none;
   transition: all 0.3s ease;
 }
 .dejar-reseña .texto:focus {
   outline: none;
   border-color: #A176FF;
-  box-shadow: 0 0 4px #A176FF;
+  box-shadow: 0 0 0 3px rgba(161, 118, 255, 0.2);
 }
 
 .dejar-reseña .btn {
-  margin-top: 20px;
+  align-self: flex-end;
+  margin-top: 10px;
   margin-bottom: 5px;
 }
 
+/* =============================== */
+/* 0. Rating -  */
+/* =============================== */
+.rating {
+    unicode-bidi: bidi-override;
+    direction: rtl; /* Para que las estrellas se alineen de derecha a izquierda (5 a 1) */
+    text-align: center;
+    font-size: 30px;
+    display: inline-block; 
+    margin-bottom: 10px;
+}
 
+.rating > .star {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    color: #4A3F55; /* Color por defecto */
+   transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Estilo para las estrellas seleccionadas */
+.rating > .star.selected,
+.rating > .star:hover,
+.rating > .star:hover ~ .star {
+    color: #A176FF;/* Color de la selección/hover */
+}
+.rating > .star:hover {
+  /* La estrella se agranda un poco, dando una sensación de interactividad */
+  transform: scale(1.2); 
+}
+
+/* Estilo para mostrar la calificación en las reseñas cargadas */
+.review-rating {
+    color: #A176FF;
+    font-size: 20px;
+}
 
 .reviews-section {
   display: grid;
@@ -517,31 +620,53 @@ body {
 }
 
 .review{
-background: linear-gradient(145deg, #1a1a1a, #232030);
-padding: 15px;
-border-radius: 10px;
-box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #2C2340;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #4A3F55;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
 
-
-
-
-.review p{
+.review-text {
     text-align: justify;
+    line-height: 1.6;
+    color: #B0B0B5;
+    margin: 0 0 15px 0;
+    flex-grow: 1;
 }
 
 .review-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #4A3F55;
 }
+
 .review-header img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #5A4C66;
+}
+
+.review-username {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #F2F2F7;
+}
+.review-footer {
+  text-align: right; 
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #888099; /* Color de texto atenuado, para información secundaria */
 }
 
 
@@ -592,34 +717,3 @@ overflow: hidden;
 
 
 
-/* =============================== */
-/* 0. Rating -  */
-/* =============================== */
-.rating {
-    unicode-bidi: bidi-override;
-    direction: rtl; /* Para que las estrellas se alineen de derecha a izquierda (5 a 1) */
-    text-align: center;
-    font-size: 30px; /* Tamaño de las estrellas */
-    display: inline-block; /* Ocupa solo el espacio necesario */
-}
-
-.rating > .star {
-    display: inline-block;
-    position: relative;
-    cursor: pointer;
-    color: #ccc; /* Color por defecto */
-    transition: color 0.2s;
-}
-
-/* Estilo para las estrellas seleccionadas */
-.rating > .star.selected,
-.rating > .star:hover,
-.rating > .star:hover ~ .star {
-    color: gold; /* Color de la selección/hover */
-}
-
-/* Estilo para mostrar la calificación en las reseñas cargadas */
-.review-rating {
-    color: gold;
-    font-size: 20px;
-}
