@@ -1,20 +1,8 @@
-//cerrar y abrir modal registro
-document.getElementById('openModal').onclick = function(e) {
-  e.preventDefault();
-  document.getElementById('modal').style.display = 'block';
-};
-document.getElementById('closeModal').onclick = function() {
-  document.getElementById('modal').style.display = 'none';
-};
-window.onclick = function(event) {
-  if (event.target == document.getElementById('modal')) {
-    document.getElementById('modal').style.display = 'none';
-  }
-};
+
 
 function actualizarEscenario(usuario) {
     const loginBtn = document.getElementById('showLogin');
-    const registerBtn = document.getElementById('openModal');
+    const registerBtn = document.getElementById('registerLink');
     const userDisplay = document.getElementById('userDisplay');
      const menuOptions = document.getElementById('menuOptions');
 
@@ -38,14 +26,14 @@ function actualizarEscenario(usuario) {
 document.getElementById('showLogin').onclick = function(e) {
     e.preventDefault();
     document.getElementById('showLogin').style.display = 'none';
-    document.getElementById('openModal').style.display = 'none';
+    document.getElementById('registerLink').style.display = 'none';
     document.getElementById('loginForm').style.display = 'flex';
 };
 document.getElementById('cancelLogin').onclick = function(e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('showLogin').style.display = 'inline-block';
-    document.getElementById('openModal').style.display = 'inline-block';
+    document.getElementById('registerLink').style.display = 'inline-block';
 };
 
 
@@ -75,26 +63,7 @@ document.getElementById('loginForm').onsubmit = async function(e) {
 
 };
 
-document.getElementById('registerForm').onsubmit = async function(e) {
-    e.preventDefault();
-    const usuario = document.getElementById('registerUser').value;
-    const contrasena = document.getElementById('registerPass').value;
-    const email = document.getElementById('registerEmail').value;
 
-    const response = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario, contrasena, email })
-    });
-
-    if (response.ok) {
-        // Registro exitoso
-        alert("Registro exitoso. Ahora puedes iniciar sesión.");
-        document.getElementById('modal').style.display = 'none';
-    }
-    else { alert("Error en el registro. Inténtalo de nuevo."); }
-    
-};
 
 document.getElementById('searchInput').addEventListener('keydown', async function(e) {
     if (e.key === 'Enter') {
@@ -236,6 +205,7 @@ window.addEventListener('click', (e) => {
         menuOptions.classList.remove('show');
     }
 });
+
 
 // Cerrar sesión
 cerrarSesion.addEventListener('click', (e) => {

@@ -669,10 +669,98 @@ body {
   color: #888099; /* Color de texto atenuado, para información secundaria */
 }
 
+/* =============================== */
+/* 5. Perfil */
+/* =============================== */
+
+.perfil {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.info-perfil {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  border-bottom: 1px solid #1b2228;
+  padding-bottom: 25px;
+}
+
+.foto-perfil {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  object-fit: cover;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.foto-perfil:hover {
+  transform: scale(1.05);
+}
+
+.oculto {
+  display: none;
+}
+
+.detalles h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5em;
+}
+
+.bio {
+  margin: 6px 0;
+  font-style: italic;
+  color: #b3b3b3;
+}
+
+.ubicacion {
+  font-size: 0.9em;
+  color: #888;
+}
+
+
+.juegos-favoritos {
+  margin-top: 25px;
+}
+
+.juegos-favoritos h2 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
+.list {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.list img {
+  width: 150px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.galeria img:hover {
+  transform: scale(1.05);
+}
+
+/* ==== Editable ==== */
+.editable {
+  cursor: text;
+  border-bottom: 1px dashed transparent;
+}
+
 
 
 /* =============================== */
-/* 0. Menu hambuerguesa */
+/* 0.5 Menu hambuerguesa */
 /* =============================== */
 #userDisplay {
     position: relative;
@@ -713,6 +801,9 @@ body {
     from { opacity: 0; transform: translate(-50%, -5px); }
     to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+
+
 
 
 
