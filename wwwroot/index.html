@@ -13,25 +13,25 @@
             <img src="images/logo.png" alt="logo" class="logo-img">
         </div>
         <h1>amerlog</h1>
-        <a href="#" id="showLogin" class="clickeable">Iniciar Sesión </a>
-        <a href="#" id="openModal" class="clickeable">Registrarse </a>
+        <a href="#" id="showLogin" class="clickeable">Sign in </a>
+        <a href="register.html" id="registerLink" class="clickeable">Create account </a>
         
         <span id="userDisplay" class="clickeable"></span>
         <div id="menuOptions" class="menu-options">
-         <a href="#" id="perfilUsuario">Perfil</a>
-         <a href="#" id="cerrarSesion">Cerrar sesión</a>
+         <a href="profile.html" id="perfilUsuario">Profile</a>
+         <a href="#" id="cerrarSesion">Sign out</a>
         </div>
 
         
         <form id="loginForm" class="login-form" style="display:none;">
         <input type="text" id="loginUser" placeholder="Usuario" required>
         <input type="password" id="loginPass" placeholder="Contraseña" required>
-        <button type="submit" class="btn">Entrar</button>
-        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancelar</a>
+        <button type="submit" class="btn">Sign in</button>
+        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancel</a>
     </form>
     <div class="search-wrapper">
-        <label for="searchInput" class="visually-hidden">Buscar juegos</label>
-        <input id="searchInput" type="search" placeholder="Buscar juegos, etiquetas, géneros..." aria-label="Buscar juegos" autocomplete="off" />
+        <label for="searchInput" class="visually-hidden">Search games</label>
+        <input id="searchInput" type="search" placeholder="Search games..." aria-label="Search" autocomplete="off" />
         <div id="searchHint" class="search-hint" aria-live="polite"></div>
         </div>
     </header>
@@ -52,31 +52,7 @@
     </div>
 
      
-    <!-- MODAL REGISTRO -->
     
-    <div id="modal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <span id="closeModal" class="close">&times;</span>
-    <h2>Registro</h2>
-    <form id="registerForm">
-    <div class="form-group username">
-        <input type="text" id="registerUser" name="username" required placeholder="">
-        <label for="registerUser">Nombre de usuario:</label>
-    </div>
-    <div class="form-group email">
-        <input type="email" id="registerEmail" name="email" required placeholder="">
-        <label for="registerEmail">Correo electrónico:</label>
-    </div>
-    <div class="form-group password">
-        <input type="password" id="registerPass" name="password" required placeholder="">
-        <label for="registerPass">Contraseña:</label>
-    </div>
-    <button type="submit" class="btn">Registrarse</button>
-    </form>
-  </div>
-</div>
-
-     
     
 
   <script src="main.js"></script>
