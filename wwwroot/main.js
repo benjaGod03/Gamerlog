@@ -1,21 +1,10 @@
-//cerrar y abrir modal registro
-document.getElementById('openModal').onclick = function(e) {
-  e.preventDefault();
-  document.getElementById('modal').style.display = 'block';
-};
-document.getElementById('closeModal').onclick = function() {
-  document.getElementById('modal').style.display = 'none';
-};
-window.onclick = function(event) {
-  if (event.target == document.getElementById('modal')) {
-    document.getElementById('modal').style.display = 'none';
-  }
-};
+
 
 function actualizarEscenario(usuario) {
     const loginBtn = document.getElementById('showLogin');
-    const registerBtn = document.getElementById('openModal');
+    const registerBtn = document.getElementById('registerLink');
     const userDisplay = document.getElementById('userDisplay');
+     const menuOptions = document.getElementById('menuOptions');
 
     if (usuario) {
         // Usuario logueado
@@ -28,6 +17,7 @@ function actualizarEscenario(usuario) {
         loginBtn.style.display = 'inline-block';
         registerBtn.style.display = 'inline-block';
         userDisplay.style.display = 'none';
+        menuOptions.classList.remove('show');
     }
 }
 
@@ -36,14 +26,14 @@ function actualizarEscenario(usuario) {
 document.getElementById('showLogin').onclick = function(e) {
     e.preventDefault();
     document.getElementById('showLogin').style.display = 'none';
-    document.getElementById('openModal').style.display = 'none';
+    document.getElementById('registerLink').style.display = 'none';
     document.getElementById('loginForm').style.display = 'flex';
 };
 document.getElementById('cancelLogin').onclick = function(e) {
     e.preventDefault();
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('showLogin').style.display = 'inline-block';
-    document.getElementById('openModal').style.display = 'inline-block';
+    document.getElementById('registerLink').style.display = 'inline-block';
 };
 
 
@@ -73,26 +63,7 @@ document.getElementById('loginForm').onsubmit = async function(e) {
 
 };
 
-document.getElementById('registerForm').onsubmit = async function(e) {
-    e.preventDefault();
-    const usuario = document.getElementById('registerUser').value;
-    const contrasena = document.getElementById('registerPass').value;
-    const email = document.getElementById('registerEmail').value;
 
-    const response = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario, contrasena, email })
-    });
-
-    if (response.ok) {
-        // Registro exitoso
-        alert("Registro exitoso. Ahora puedes iniciar sesión.");
-        document.getElementById('modal').style.display = 'none';
-    }
-    else { alert("Error en el registro. Inténtalo de nuevo."); }
-    
-};
 
 document.getElementById('searchInput').addEventListener('keydown', async function(e) {
     if (e.key === 'Enter') {
@@ -102,17 +73,21 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
 
         // Llama a tu backend
         const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
+        const listTitle = document.getElementById('listTitle');
+        const gamesList = document.getElementById('gamesList');
+
         if (response.ok) {
             const data = await response.json();
         gamesList.innerHTML = "";
 
         if (data.results && data.results.length > 0) {
+            listTitle.textContent = `Resultados para: "${query}"`;
             data.results.slice(0, 10).forEach(game => {
                 const gameDiv = document.createElement('div');
-                gameDiv.className = 'game';
+                gameDiv.className = 'game-popular';
                 gameDiv.style.cursor = 'pointer';
                 gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}">
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
                         <span>✰ ${game.rating}</span>
                         <span>💬 ${game.reviews_count || 0}</span>
@@ -154,8 +129,8 @@ window.addEventListener('DOMContentLoaded', async function() {
                 gameDiv.innerHTML = `
                     <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
-                        <span>✰ ${game.rating}</span>
-                        <span>💬 ${game.reviews_count || 0}</span>
+                        <span>✰ ${game.PromCalificacion}</span>
+                        <span>💬 ${game.CantidadResenas || 0}</span>
                     </div>
                     <div class="game-title">${game.name}</div>
                 `;
@@ -193,8 +168,8 @@ window.addEventListener('DOMContentLoaded', async function() {
                 gameDiv.innerHTML = `
                     <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
-                        <span>✰ ${game.rating}</span>
-                        <span>💬 ${game.reviews_count || 0}</span>
+                        <span>✰ ${game.PromCalificacion}</span>
+                        <span>💬 ${game.CantidadResenas || 0}</span>
                     </div>
                     <div class="game-title">${game.name}</div>
                 `;
@@ -214,6 +189,31 @@ window.addEventListener('DOMContentLoaded', async function() {
 });
 
 
+const userDisplay = document.getElementById('userDisplay');
+const menuOptions = document.getElementById('menuOptions');
+const cerrarSesion = document.getElementById('cerrarSesion');
+
+// Alternar el menú al hacer clic en el usuario
+userDisplay.addEventListener('click', (e) => {
+    e.stopPropagation(); // evita que el click cierre el menú inmediatamente
+    menuOptions.classList.toggle('show');
+});
+
+// Cerrar el menú si se hace clic fuera
+window.addEventListener('click', (e) => {
+    if (!userDisplay.contains(e.target)) {
+        menuOptions.classList.remove('show');
+    }
+});
+
+
+// Cerrar sesión
+cerrarSesion.addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('usuario');
+    menuOptions.classList.remove('show');
+    actualizarEscenario(null);
+});
 
 
 

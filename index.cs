@@ -8,6 +8,7 @@ using System.Reflection.Metadata; // <-- Agrega este using
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para AddCookie
+using System.Text.Json.Nodes;
 
 
 
@@ -167,25 +168,77 @@ app.MapGet("/games", async (HttpContext context) =>
 {
     string apiKey = "98030a434a584555a2ff854c4a5fd74b";
     string query = context.Request.Query["search"];
-    string url;
-
-    if (string.IsNullOrWhiteSpace(query))
-    {
-        // Juegos populares por defecto
-        url = $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true&page_size=40";
-    }
-    else
-    {
-        url = $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=40";
-    }
+    string url = string.IsNullOrWhiteSpace(query)
+        ? $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true&page_size=40"
+        : $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=40";
 
     using var httpClient = new HttpClient();
 
     try
     {
         var rawgResponse = await httpClient.GetStringAsync(url);
+        var root = JsonNode.Parse(rawgResponse);
+        var results = root?["results"]?.AsArray();
+        if (results == null || results.Count == 0)
+        {
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(rawgResponse);
+            return;
+        }
+        
+        var ids = results.Select(r => int.TryParse(r?["id"]?.ToString(), out var x) ? x : 0).Where(id => id != 0).ToList();
+        if (ids.Count == 0)
+        {
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(rawgResponse);
+            return;
+        }
+       
+        var paramNames = ids.Select((_, i) => $"@id{i}").ToArray();
+        var inClause = string.Join(", ", paramNames);
+        var sql = $@"
+            SELECT Juego, COUNT(*) AS cnt, AVG(CAST(Calificacion AS FLOAT)) AS avgCal
+            FROM Reviews
+            WHERE Juego IN ({inClause})
+            GROUP BY Juego;
+        ";
+        var aggregates = new Dictionary<int, (int count, double avg)>();
+        using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+        using var cmd = new SqlCommand(sql, conn);
+        for (int i = 0; i < ids.Count; i++) cmd.Parameters.AddWithValue(paramNames[i], ids[i]);
+
+        using var rdr = await cmd.ExecuteReaderAsync();
+        while (await rdr.ReadAsync())
+        {
+            var juego = Convert.ToInt32(rdr.GetValue(0));
+            var cnt = rdr.IsDBNull(1) ? 0 : Convert.ToInt32(rdr.GetValue(1));
+            var avg = rdr.IsDBNull(2) ? 0.0 : Convert.ToDouble(rdr.GetValue(2));
+            aggregates[juego] = (cnt, avg);
+        }
+
+        foreach (var item in results)
+        {
+            if (item?["id"] != null && int.TryParse(item["id"]!.ToString(), out int gid))
+            {
+                if (aggregates.TryGetValue(gid, out var ag))
+                {
+                    item["CantidadResenas"] = ag.count;
+                    item["PromCalificacion"] = Math.Round(ag.avg, 1);
+                    // Si quieres que la vista use preferentemente rating local cuando exista:
+                    item["displayRating"] = ag.count > 0 ? ag.avg : (item["rating"]?.GetValue<double?>() ?? 0.0);
+                }
+                else
+                {
+                    item["CantidadResenas"] = 0;
+                    item["PromCalificacion"] = 0.0;
+                    item["displayRating"] = item["rating"]?.GetValue<double?>() ?? 0.0;
+                }
+
+            }
+        }
         context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync(rawgResponse);
+        await context.Response.WriteAsync(root.ToJsonString());
     }
     catch (Exception ex)
     {
@@ -205,14 +258,33 @@ app.MapGet("/game", async (HttpContext context) =>
         return;
     }
 
-    string url = $"https://api.rawg.io/api/games/{id}?key={apiKey}";
     using var httpClient = new HttpClient();
 
     try
     {
-        var rawgResponse = await httpClient.GetStringAsync(url);
+        var rawgJson = await httpClient.GetStringAsync($"https://api.rawg.io/api/games/{id}?key={apiKey}");
+        var gameNode = JsonNode.Parse(rawgJson);
+
+        using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+
+        using var aggCmd = new SqlCommand("SELECT COUNT(*) AS cnt, AVG(CAST(Calificacion AS FLOAT)) AS avgCal FROM Reviews WHERE Juego = @juego", conn);
+        aggCmd.Parameters.AddWithValue("@juego", int.Parse(id));
+        using var aggR = await aggCmd.ExecuteReaderAsync();
+        int localCount = 0; double localAvg = 0.0;
+        if (await aggR.ReadAsync())
+        {
+            localCount = aggR.IsDBNull(0) ? 0 : Convert.ToInt32(aggR.GetValue(0));
+            localAvg = aggR.IsDBNull(1) ? 0.0 : Convert.ToDouble(aggR.GetValue(1));
+        }
+        aggR.Close();
+
+        gameNode["CantidadResenas"] = localCount;
+        gameNode["PromCalificacion"] =  Math.Round(localAvg,1);
+        
         context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync(rawgResponse);
+        await context.Response.WriteAsync(gameNode.ToJsonString());
+    
     }
     catch (Exception ex)
     {
@@ -237,6 +309,7 @@ app.MapGet("/game", async (HttpContext context) =>
     Console.WriteLine($"Usuario logueado (Claim): {nombreUsuario}");
     Console.WriteLine($"Texto de la Reseña (DTO): {resenaDto.Texto}");
     Console.WriteLine($"ID del Juego (DTO): {resenaDto.Juego}");
+    Console.WriteLine($"rating (DTO): {resenaDto.Rating}");
     Console.WriteLine("------------------------------");
     // Esto no debería pasar si [Authorize] funciona, pero es buena práctica verificar
     if (string.IsNullOrEmpty(nombreUsuario))
@@ -268,13 +341,14 @@ app.MapGet("/game", async (HttpContext context) =>
     await connection.OpenAsync();
     
     var command = new SqlCommand(
-        "INSERT INTO Reviews (Creador, Resena, Fecha, Juego) VALUES (@creador, @resena, @fecha, @juego)",
+        "INSERT INTO Reviews (Creador, Resena, Fecha, Juego, Calificacion) VALUES (@creador, @resena, @fecha, @juego, @calificacion)",
         connection
     );
     command.Parameters.AddWithValue("@resena", resenaDto.Texto);
     command.Parameters.AddWithValue("@juego", resenaDto.Juego);
     command.Parameters.AddWithValue("@creador", nombreUsuario); // Usamos el nombre del Claim
     command.Parameters.AddWithValue("@fecha", fechaActual);
+    command.Parameters.AddWithValue("@calificacion", resenaDto.Rating); // Nuevo parámetro para el rating
 
     await command.ExecuteNonQueryAsync();
     
@@ -286,7 +360,8 @@ app.MapGet("/game", async (HttpContext context) =>
         Texto = resenaDto.Texto,
         JuegoId = resenaDto.Juego,
         Usuario = nombreUsuario, 
-        Fecha = fechaActual.ToString("o") // "o" es formato ISO8601, fácil de leer en JS
+        Fecha = fechaActual.ToString("o"), // "o" es formato ISO8601, fácil de leer en JS
+        Rating = resenaDto.Rating // Nuevo campo para el rating
     });
 }); // Asegura que solo usuarios autenticados puedan acceder  
 
@@ -306,7 +381,7 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     await connection.OpenAsync();
 
     var command = new SqlCommand(
-        "SELECT Creador, Resena, Fecha FROM Reviews WHERE Juego = @juegoId ORDER BY Fecha DESC",
+        "SELECT Creador, Resena, Fecha, Calificacion FROM Reviews WHERE Juego = @juegoId ORDER BY Fecha DESC",
         connection
     );
     command.Parameters.AddWithValue("@juegoId", juegoId);
@@ -319,7 +394,8 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
         {
             Usuario = reader.GetString(0),
             Texto = reader.GetString(1),
-            Fecha = reader.GetDateTime(2).ToString("o") // Formato ISO8601
+            Fecha = reader.GetDateTime(2).ToString("o"), // Formato ISO8601
+            Rating = reader.GetInt32(3) // Nuevo campo para la calificación 
         });
     }
 
@@ -344,4 +420,5 @@ public class ResenaCreacionDTO
     // Las mayúsculas deben coincidir con la clave JSON enviada ("Texto", "JuegoId")
     public string Texto { get; set; } 
     public int Juego { get; set; } // O int, dependiendo de cómo manejes los IDs
+    public int Rating { get; set; } // Nuevo campo para el rating   
 }
