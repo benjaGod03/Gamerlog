@@ -1,5 +1,7 @@
 
 
+
+
 function actualizarEscenario(usuario) {
     const loginBtn = document.getElementById('showLogin');
     const registerBtn = document.getElementById('registerLink');
@@ -21,6 +23,19 @@ function actualizarEscenario(usuario) {
     }
 }
 
+//usuario desde back
+async function fetchMeAndUpdate() {
+  try {
+    const resp = await fetch('/me');
+    if (!resp.ok) { actualizarEscenario(null); return; }
+    const data = await resp.json();
+    if (data.authenticated) actualizarEscenario(data.usuario);
+    else actualizarEscenario(null);
+  } catch (e) {
+    console.error('fetch /me failed', e);
+    actualizarEscenario(null);
+  }
+}
 
 //mostrar login
 document.getElementById('showLogin').onclick = function(e) {
@@ -49,8 +64,7 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     });
 
     if (response.ok) {
-        localStorage.setItem('usuario', Usuario);
-        actualizarEscenario(Usuario);
+        await fetchMeAndUpdate();
         // Login exitoso
         document.getElementById('loginForm').style.display = 'none';
         
@@ -113,6 +127,7 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
 
 
 window.addEventListener('DOMContentLoaded', async function() {
+    await fetchMeAndUpdate();
     const gamesList = document.getElementById('gamesList');
     gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
 
@@ -161,7 +176,7 @@ window.addEventListener('DOMContentLoaded', async function() {
 
         if (data.results && data.results.length > 0) {
             
-            data.results.slice(5, 40).forEach(game => {
+            data.results.slice(5, 20).forEach(game => {
                 const gameDiv = document.createElement('div');
                 gameDiv.className = 'games';
                 gameDiv.style.cursor = 'pointer';
@@ -192,6 +207,14 @@ window.addEventListener('DOMContentLoaded', async function() {
 const userDisplay = document.getElementById('userDisplay');
 const menuOptions = document.getElementById('menuOptions');
 const cerrarSesion = document.getElementById('cerrarSesion');
+
+if (cerrarSesion) {
+  cerrarSesion.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch('/logout', { method: 'POST' });
+    actualizarEscenario(null);
+  });
+}
 
 // Alternar el menú al hacer clic en el usuario
 userDisplay.addEventListener('click', (e) => {

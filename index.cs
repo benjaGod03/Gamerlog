@@ -11,9 +11,7 @@ using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para AddCookie
 using System.Text.Json.Nodes;
 
 
-
 var builder = WebApplication.CreateBuilder(args);
-
 // Añadir el servicio de sesiones
 builder.Services.AddDistributedMemoryCache(); // Necesario para almacenar las sesiones
 builder.Services.AddSession(options =>
@@ -34,9 +32,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+var httpClient = new HttpClient(); // reutilizar en todo el app
+TimeSpan cacheDuration = TimeSpan.FromMinutes(5);
 // Usar el middleware de sesiones
 app.UseSession();
-app.UseAuthorization();
+app.UseAuthentication();
 app.UseAuthorization(); // Usa el middleware de autorización
 
 
@@ -169,15 +170,13 @@ app.MapGet("/games", async (HttpContext context) =>
     string apiKey = "98030a434a584555a2ff854c4a5fd74b";
     string query = context.Request.Query["search"];
     string url = string.IsNullOrWhiteSpace(query)
-        ? $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true&page_size=40"
-        : $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=40";
+        ? $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true&page_size=20"
+        : $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=20";
 
-    using var httpClient = new HttpClient();
-
+    var rawgResponse = await httpClient.GetStringAsync(url);
+    var root = JsonNode.Parse(rawgResponse);
     try
     {
-        var rawgResponse = await httpClient.GetStringAsync(url);
-        var root = JsonNode.Parse(rawgResponse);
         var results = root?["results"]?.AsArray();
         if (results == null || results.Count == 0)
         {
@@ -197,10 +196,9 @@ app.MapGet("/games", async (HttpContext context) =>
         var paramNames = ids.Select((_, i) => $"@id{i}").ToArray();
         var inClause = string.Join(", ", paramNames);
         var sql = $@"
-            SELECT Juego, COUNT(*) AS cnt, AVG(CAST(Calificacion AS FLOAT)) AS avgCal
-            FROM Reviews
-            WHERE Juego IN ({inClause})
-            GROUP BY Juego;
+            SELECT Juego, Cantidad, Promedio
+            FROM Puntuaciones
+            WHERE Juego IN ({inClause});
         ";
         var aggregates = new Dictionary<int, (int count, double avg)>();
         using var conn = new SqlConnection(connectionString);
@@ -237,6 +235,7 @@ app.MapGet("/games", async (HttpContext context) =>
 
             }
         }
+
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsync(root.ToJsonString());
     }
@@ -258,8 +257,6 @@ app.MapGet("/game", async (HttpContext context) =>
         return;
     }
 
-    using var httpClient = new HttpClient();
-
     try
     {
         var rawgJson = await httpClient.GetStringAsync($"https://api.rawg.io/api/games/{id}?key={apiKey}");
@@ -268,7 +265,7 @@ app.MapGet("/game", async (HttpContext context) =>
         using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync();
 
-        using var aggCmd = new SqlCommand("SELECT COUNT(*) AS cnt, AVG(CAST(Calificacion AS FLOAT)) AS avgCal FROM Reviews WHERE Juego = @juego", conn);
+        using var aggCmd = new SqlCommand("SELECT Cantidad, Promedio FROM Puntuaciones WHERE Juego = @juego", conn);
         aggCmd.Parameters.AddWithValue("@juego", int.Parse(id));
         using var aggR = await aggCmd.ExecuteReaderAsync();
         int localCount = 0; double localAvg = 0.0;
@@ -351,25 +348,65 @@ app.MapGet("/game", async (HttpContext context) =>
     command.Parameters.AddWithValue("@calificacion", resenaDto.Rating); // Nuevo parámetro para el rating
 
     await command.ExecuteNonQueryAsync();
-    
 
+    using var checkCmd = new SqlCommand("SELECT COUNT(1) FROM Puntuaciones WHERE Juego = @juego", connection);
+    checkCmd.Parameters.AddWithValue("@juego", resenaDto.Juego);
+    var existsObj = await checkCmd.ExecuteScalarAsync();
+    int exists = Convert.ToInt32(existsObj);
+    
+    if(exists == 0)
+    {
+        var command2 = new SqlCommand(
+            "INSERT INTO Puntuaciones (Juego, Promedio, Cantidad) VALUES (@juego, @promedio, @cantidad)",
+            connection
+        );
+        command2.Parameters.AddWithValue("@juego", resenaDto.Juego);
+        command2.Parameters.AddWithValue("@promedio", resenaDto.Rating);
+        command2.Parameters.AddWithValue("@cantidad", 1);
+
+        await command2.ExecuteNonQueryAsync();
+    }
+    else
+    {
+        // Obtener promedio (float) y cantidad usando ExecuteScalarAsync para no mantener un DataReader abierto
+        var avgCmd = new SqlCommand("SELECT AVG(CAST(Calificacion AS FLOAT)) FROM Reviews WHERE Juego = @juego", connection);
+        avgCmd.Parameters.AddWithValue("@juego", resenaDto.Juego);
+        var avgObj = await avgCmd.ExecuteScalarAsync();
+        double promedio = (avgObj == null || avgObj == DBNull.Value) ? 0.0 : Convert.ToDouble(avgObj);
+
+        var countCmd = new SqlCommand("SELECT COUNT(*) FROM Reviews WHERE Juego = @juego", connection);
+        countCmd.Parameters.AddWithValue("@juego", resenaDto.Juego);
+        var cntObj = await countCmd.ExecuteScalarAsync();
+        int cantidad = (cntObj == null || cntObj == DBNull.Value) ? 0 : Convert.ToInt32(cntObj);
+
+        var command3 = new SqlCommand(
+            "UPDATE Puntuaciones SET Promedio = @promedio, Cantidad = @cantidad WHERE Juego = @juego",
+            connection
+        );
+        command3.Parameters.AddWithValue("@juego", resenaDto.Juego);
+        command3.Parameters.AddWithValue("@promedio", promedio);
+        command3.Parameters.AddWithValue("@cantidad", cantidad);
+
+        await command3.ExecuteNonQueryAsync();
+    }
     // 3. RESPUESTA EXITOSA
     // Devolvemos los datos finales (incluyendo los que generó el servidor)
-    return Results.Ok(new 
+    return Results.Ok(new
     {
         Texto = resenaDto.Texto,
         JuegoId = resenaDto.Juego,
-        Usuario = nombreUsuario, 
+        Usuario = nombreUsuario,
         Fecha = fechaActual.ToString("o"), // "o" es formato ISO8601, fácil de leer en JS
         Rating = resenaDto.Rating // Nuevo campo para el rating
     });
+    
 }); // Asegura que solo usuarios autenticados puedan acceder  
 
 //Cargar Reseñas al abrir un juego
 app.MapGet("/cargarReviews", async (HttpContext context) =>
 {
     string juegoId = context.Request.Query["gameID"];
-    
+
     if (string.IsNullOrWhiteSpace(juegoId))
     {
         context.Response.StatusCode = 400;
@@ -390,7 +427,7 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     using var reader = await command.ExecuteReaderAsync();
     while (await reader.ReadAsync())
     {
-        reviews.Add(new 
+        reviews.Add(new
         {
             Usuario = reader.GetString(0),
             Texto = reader.GetString(1),
@@ -402,6 +439,103 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     context.Response.ContentType = "application/json";
     await context.Response.WriteAsync(JsonSerializer.Serialize(reviews));
 });
+
+app.MapGet("/me", (HttpContext ctx) =>
+{
+    if (ctx.User?.Identity?.IsAuthenticated == true)
+    {
+        var name = ctx.User.FindFirstValue(ClaimTypes.Name) ?? ctx.User.Identity?.Name;
+        var email = ctx.User.FindFirstValue(ClaimTypes.Email);
+        return Results.Json(new { authenticated = true, usuario = name, email = email });
+    }
+    return Results.Json(new { authenticated = false });
+});
+
+app.MapPost("/logout", async (HttpContext ctx) =>
+{
+    await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Ok();
+});
+
+app.MapPost("/foto", async (HttpContext context) =>
+{
+    // Debe estar autenticado
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("No autenticado");
+        return Results.Unauthorized();
+    }
+
+    var form = await context.Request.ReadFormAsync();
+    var file = form.Files["foto"];
+    if (file == null || file.Length == 0)
+    {
+        context.Response.StatusCode = 400;
+        return Results.BadRequest(new { message = "No se subió ninguna foto" });
+    }
+
+    // guardar en wwwroot/uploads con nombre único
+    var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "uploads");
+    if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
+
+    var ext = Path.GetExtension(file.FileName);
+    var fileName = $"{Guid.NewGuid()}{ext}";
+    var filePath = Path.Combine(uploads, fileName);
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    // ruta pública para servir desde wwwroot
+    var publicPath = "/images/uploads/" + fileName;
+
+    // guardar ruta en la BDD (usuarios identificados por correo)
+    try
+    {
+        using var conn = new SqlConnection(connectionString);
+        await conn.OpenAsync();
+        using var cmd = new SqlCommand("UPDATE Usuarios SET Foto = @foto WHERE Correo = @correo", conn);
+        cmd.Parameters.AddWithValue("@foto", publicPath);
+        cmd.Parameters.AddWithValue("@correo", email);
+        await cmd.ExecuteNonQueryAsync();
+    }
+    catch (Exception ex)
+    {
+        context.Response.StatusCode = 500;
+        return Results.Json(new { message = "Error al guardar la ruta en la base de datos: " + ex.Message });
+    }
+
+    return Results.Ok(new { message = "Foto subida exitosamente", path = publicPath });
+});
+
+app.MapGet("/perfil", async (HttpContext context) =>
+{
+    var email = context.User?.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+        return Results.Json(new { authenticated = false });
+
+    using var conn = new SqlConnection(connectionString);
+    await conn.OpenAsync();
+    using var cmd = new SqlCommand("SELECT Usuario, Correo, Foto FROM Usuarios WHERE Correo = @correo", conn);
+    cmd.Parameters.AddWithValue("@correo", email);
+    using var reader = await cmd.ExecuteReaderAsync();
+    if (await reader.ReadAsync())
+    {
+        var usuario = reader.IsDBNull(0) ? null : reader.GetString(0);
+        var correo = reader.IsDBNull(1) ? null : reader.GetString(1);
+        var foto = reader.IsDBNull(2) ? null : reader.GetString(2);
+        return Results.Json(new { authenticated = true, usuario, correo, fotoPath = foto });
+    }
+
+    return Results.Json(new { authenticated = false });
+});
+
+
+
+
+
 
 app.Run();
 
