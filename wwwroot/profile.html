@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="icon" href="images/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <img src="images/logo.png" alt="logo" class="logo-img">
+        </div>
+        <h1>amerlog</h1>
+        <a href="#" id="showLogin" class="clickeable">Iniciar Sesión </a>
+        <a href="#" id="openModal" class="clickeable">Registrarse </a>
+
+        <span id="userDisplay" class="clickeable"></span>
+
+        
+        <form id="loginForm" class="login-form" style="display:none;">
+        <input type="text" id="loginUser" placeholder="Usuario" required>
+        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <button type="submit" class="btn">Entrar</button>
+        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancelar</a>
+    </form>
+    <div class="search-wrapper">
+        <label for="searchInput" class="visually-hidden">Buscar juegos</label>
+        <input id="searchInput" type="search" placeholder="Buscar juegos, etiquetas, géneros..." aria-label="Buscar juegos" autocomplete="off" />
+        <div id="searchHint" class="search-hint" aria-live="polite"></div>
+        </div>
+    </header>
+    
+    <main class="perfil">
+    <section class="info-perfil">
+         <input type="file" id="inputFoto" name="foto" class="oculto" accept="image/*">
+        <img src="images/descarga.svg" alt="Foto de perfil" class="foto-perfil" id="fotoPerfil">
+      <div class="detalles">
+        <h1 class="editable" contenteditable="true" id="perfilUsername">Username</h1>
+        <p class="editable bio" contenteditable="true" id="perfilBio">bio</p>
+        <p class="editable ubicacion" contenteditable="true" id="perfilLocation">📍 country</p>
+      </div>
+    </section>
+
+    <section class="juegos-favoritos">
+      <h2>juegos favoritos</h2>
+      <div class="list" id="listFav">
+        <img src="images/img.png" >
+        <img src="images/img.png"">
+      </div>
+    </section>
+  </main>
+   
+  <script src="main.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
