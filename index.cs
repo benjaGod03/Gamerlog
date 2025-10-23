@@ -46,6 +46,10 @@ app.UseDefaultFiles(); // Sirve index.html por defecto
 app.UseStaticFiles();  // Sirve archivos estáticos (html, js, css, imágenes)
 
 string connectionString = "Server=DESKTOP-6R4GSNU\\SQLEXPRESS;Database=Gamerlog;Uid=candela;Pwd=1234;TrustServerCertificate=True;";
+//IMPORTANTE!!!!!!!!!!
+//!!!!!!!!!!!!!!!
+//SI NO SON MATIAS DEBEN USAR 
+//"Server=190.193.242.73,1433;Database=Gamerlog;Uid=candela;Pwd=1234;TrustServerCertificate=True;";
 
 app.MapPost("/login", async (HttpContext context) =>
 {
@@ -418,7 +422,12 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     await connection.OpenAsync();
 
     var command = new SqlCommand(
-        "SELECT Creador, Resena, Fecha, Calificacion FROM Reviews WHERE Juego = @juegoId ORDER BY Fecha DESC",
+        @"SELECT R.Creador, R.Resena, R.Fecha, R.Calificacion,
+                 U.Usuario, U.Foto
+        FROM Reviews R 
+        LEFT JOIN Usuarios U ON R.Creador = U.Correo
+        WHERE Juego = @juegoId 
+        ORDER BY Fecha DESC",
         connection
     );
     command.Parameters.AddWithValue("@juegoId", juegoId);
@@ -429,10 +438,11 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     {
         reviews.Add(new
         {
-            Usuario = reader.GetString(0),
+            Usuario = reader.GetString(4),
             Texto = reader.GetString(1),
             Fecha = reader.GetDateTime(2).ToString("o"), // Formato ISO8601
-            Rating = reader.GetInt32(3) // Nuevo campo para la calificación 
+            Rating = reader.GetInt32(3),// Nuevo campo para la calificación 
+            Foto = reader.IsDBNull(5) ? null : reader.GetString(5)
         });
     }
 
@@ -477,6 +487,21 @@ app.MapPost("/foto", async (HttpContext context) =>
     }
 
     // guardar en wwwroot/uploads con nombre único
+    using var conn1 = new SqlConnection(connectionString);
+    await conn1.OpenAsync();
+    using var cmd1 = new SqlCommand("SELECT Foto FROM Usuarios WHERE Correo = @correo", conn1);
+    cmd1.Parameters.AddWithValue("@correo", email);
+    var existingPath = await cmd1.ExecuteScalarAsync();
+
+    if(existingPath != null && existingPath != DBNull.Value)
+    {
+        string pathString = existingPath as string;
+        var existingFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", pathString.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+        if (File.Exists(existingFilePath))
+        {
+            File.Delete(existingFilePath);
+        }
+    }
     var uploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "uploads");
     if (!Directory.Exists(uploads)) Directory.CreateDirectory(uploads);
 
