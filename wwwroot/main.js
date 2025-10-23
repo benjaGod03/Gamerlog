@@ -111,8 +111,8 @@ async function ejecutarBusqueda(query) {
                 gameDiv.innerHTML = `
                     <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
                     <div class="stats">
-                        <span>✰ ${game.rating}</span>
-                        <span>💬 ${game.reviews_count || 0}</span>
+                        <span>✰ ${game.PromCalificacion}</span>
+                        <span>💬 ${game.CantidadResenas || 0}</span>
                     </div>
                     <div class="game-title">${game.name}</div>
                 `;

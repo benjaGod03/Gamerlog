@@ -1,4 +1,5 @@
 window.addEventListener('DOMContentLoaded', async function() {
+    await fetchMeAndUpdate();
     const gameId = localStorage.getItem('selectedGameId');
     if (!gameId) {
         document.body.innerHTML = "<p>No se seleccionó ningún juego.</p>";
@@ -55,6 +56,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         document.body.innerHTML = "<p>Error al cargar los detalles del juego.</p>";
     }
 });
+
 
 function setupSynopsisToggle() {
   const synopsisElement = document.getElementById('gameSynopsis');
@@ -150,8 +152,8 @@ async function agregarReseña() {
             
             const reseñaGuardada = await response.json(); 
             
-            // actualizar el DOM con los datos 
-            mostrarReseñaEnDOM(reseñaGuardada.texto, reseñaGuardada.fecha, reseñaGuardada.usuario, reseñaGuardada.rating);
+            console.log("URL Foto Usuario:", reseñaGuardada.foto); // depuración      
+            mostrarReseñaEnDOM(reseñaGuardada.texto, reseñaGuardada.fecha, reseñaGuardada.usuario, reseñaGuardada.rating, reseñaGuardada.foto);
             
             // limpiar textarea
             reviewTextarea.value = "";
@@ -169,7 +171,7 @@ async function agregarReseña() {
     }
 }
 
-function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
+function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado, urlFotoUsuario) {
     const contenedor = document.getElementById('reviewList');
     
     // formatear la fecha
@@ -177,7 +179,7 @@ function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
     const fechaTexto = fechaHora.toLocaleDateString();
     const horaTexto = fechaHora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const fechaHoraTexto = `${fechaTexto} ${horaTexto}`;
-
+    console.log("URL Foto Usuario:", urlFotoUsuario); // depuración      
     const nuevaReseña = document.createElement('div');
     nuevaReseña.classList.add('review');
 
@@ -190,10 +192,12 @@ function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado) {
         <div class="review-header">
             <span class="review-username">${usuario}</span>
             <span class="review-rating">${estrellasHTML}</span>
+            <img src="${urlFotoUsuario}" alt="SIN FOTO" class="review-header img">
         </div>
         <p class="review-text">${texto}</p>
          <div class="review-footer">
             <span class="review-date">${fechaHoraTexto}</span>
+          <div class="user-photo">
         </div>
     `;
 
@@ -215,7 +219,7 @@ async function cargarReseñas(gameID) {
 
             
             reseñas.forEach(reseña => {
-                mostrarReseñaEnDOM(reseña.Texto, reseña.Fecha, reseña.Usuario, reseña.Rating);
+                mostrarReseñaEnDOM(reseña.Texto, reseña.Fecha, reseña.Usuario, reseña.Rating, reseña.Foto);
             });
 
         } else if (response.status === 404) {
