@@ -477,7 +477,31 @@ body {
   gap: 10px;
   padding: 20px 10px;
 }
+.icon{
+  display: flex;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor:pointer;
 
+}
+.icon svg{
+  width: 60px;
+  height: 60px;
+  fill: none; 
+  stroke: #A176FF; 
+  stroke-width: 1px; 
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s ease;
+}
+.icon:hover svg{
+  stroke: #F2F2F7;
+  fill: #150043;
+}
+.icon:active svg{
+  transform: scale(0.95);
+}
 .btn {
   background: #5A4C66;
   color: #F2F2F7;
