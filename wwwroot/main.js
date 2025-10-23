@@ -1,7 +1,4 @@
 
-
-
-
 function actualizarEscenario(usuario) {
     const loginBtn = document.getElementById('showLogin');
     const registerBtn = document.getElementById('registerLink');
@@ -35,6 +32,105 @@ async function fetchMeAndUpdate() {
     console.error('fetch /me failed', e);
     actualizarEscenario(null);
   }
+}
+async function cargarJuegos() {
+    const gamesList = document.getElementById('gamesList');
+    const listTitle = document.getElementById('listTitle');
+    const btnVolver = document.getElementById('btnVolver');
+    const searchInput = document.getElementById('searchInput');
+
+    listTitle.textContent = "Juegos Populares"; // O tu título original
+    btnVolver.style.display = 'none';           // Oculta el botón "Volver"
+    searchInput.value = '';
+
+    gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
+
+    const response = await fetch('/games?search=');
+         if (response.ok) {
+        const data = await response.json();
+        gamesList.innerHTML = "";
+
+        if (data.results && data.results.length > 0) {
+            data.results.slice(0, 4).forEach(game => {
+                const gameDiv = document.createElement('div');
+                gameDiv.className = 'game-popular';
+                gameDiv.style.cursor = 'pointer';
+                gameDiv.innerHTML = `
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
+                        <div class="stats">
+                         <span>✰ ${game.PromCalificacion}</span>
+                         <span>💬 ${game.CantidadResenas || 0}</span>
+                        </div>
+                    <div class="game-title">${game.name}</div>
+                `;
+                    gameDiv.onclick = function() {
+                    localStorage.setItem('selectedGameId', game.id);
+                    window.location.href = 'game.html';
+                    };
+                 gamesList.appendChild(gameDiv);
+        });
+    
+         } else {
+         gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
+         }
+    } else {
+        gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
+    }
+}
+async function ejecutarBusqueda(query) {
+    const listTitle = document.getElementById('listTitle');
+    const gamesList = document.getElementById('gamesList');
+    const btnVolver = document.getElementById('btnVolver');
+
+    // Comprobamos que estamos en la página de inicio
+    if (!listTitle || !gamesList || !btnVolver) {
+        console.error("ejecutarBusqueda() solo se puede ejecutar en index.html");
+        return;
+    }
+
+    // Mostramos un estado de "Cargando"
+    listTitle.textContent = `Buscando: "${query}"...`;
+    gamesList.innerHTML = "<p>Cargando resultados...</p>";
+    btnVolver.style.display = 'none'; // Ocultamos el botón "Volver"
+
+    // Esta es la lógica que ya tenías, ahora dentro de una función
+    const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
+
+    if (response.ok) {
+        const data = await response.json();
+        gamesList.innerHTML = ""; // Limpiamos el "Cargando..."
+
+        if (data.results && data.results.length > 0) {
+            listTitle.textContent = `Resultados para: "${query}"`;
+            btnVolver.style.display = 'block';
+            
+            data.results.slice(0, 10).forEach(game => {
+                const gameDiv = document.createElement('div');
+                gameDiv.className = 'game-popular';
+                gameDiv.style.cursor = 'pointer';
+                gameDiv.innerHTML = `
+                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
+                    <div class="stats">
+                        <span>✰ ${game.rating}</span>
+                        <span>💬 ${game.reviews_count || 0}</span>
+                    </div>
+                    <div class="game-title">${game.name}</div>
+                `;
+                gameDiv.onclick = function() {
+                    localStorage.setItem('selectedGameId', game.id);
+                    window.location.href = 'game.html';
+                };
+                gamesList.appendChild(gameDiv);
+            });
+        } else {
+            listTitle.textContent = `No se encontraron resultados para: "${query}"`;
+            gamesList.innerHTML = "<p>Intenta con otra búsqueda.</p>";
+            btnVolver.style.display = 'block';
+        }
+    } else {
+        alert("Error al buscar juegos");
+        listTitle.textContent = "Juegos Populares"; // Restaurar título en caso de error
+    }
 }
 
 //mostrar login
@@ -85,85 +181,36 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
         const query = this.value.trim();
         if (query.length === 0) return;
 
-        // Llama a tu backend
-        const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
-        const listTitle = document.getElementById('listTitle');
-        const gamesList = document.getElementById('gamesList');
+        const isOnIndex = document.getElementById('gamesList');
 
-        if (response.ok) {
-            const data = await response.json();
-        gamesList.innerHTML = "";
-
-        if (data.results && data.results.length > 0) {
-            listTitle.textContent = `Resultados para: "${query}"`;
-            data.results.slice(0, 10).forEach(game => {
-                const gameDiv = document.createElement('div');
-                gameDiv.className = 'game-popular';
-                gameDiv.style.cursor = 'pointer';
-                gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
-                    <div class="stats">
-                        <span>✰ ${game.rating}</span>
-                        <span>💬 ${game.reviews_count || 0}</span>
-                    </div>
-                    <div class="game-title">${game.name}</div>
-                `;
-                // Al hacer clic, guarda el ID en localStorage y redirige
-                gameDiv.onclick = function() {
-                    localStorage.setItem('selectedGameId', game.id);
-                    window.location.href = 'game.html';
-                };
-                gamesList.appendChild(gameDiv);
-            });
+        if (isOnIndex) {
+            //si estas en el index se queda aca
+            await ejecutarBusqueda(query);
         } else {
-            gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
-        }
-        } else {
-            alert("Error al buscar juegos");
+            // si no es redireccionamos
+            window.location.href = `index.html?search=${encodeURIComponent(query)}`;
         }
     }
 });
 
+document.getElementById('btnVolver').addEventListener('click', function() {
+    cargarJuegos(); 
+});
 
 
 window.addEventListener('DOMContentLoaded', async function() {
     await fetchMeAndUpdate();
-    const gamesList = document.getElementById('gamesList');
-    gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
+   const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
 
-    const response = await fetch('/games?search=');
-    if (response.ok) {
-        const data = await response.json();
-        gamesList.innerHTML = "";
-
-        if (data.results && data.results.length > 0) {
-            data.results.slice(0, 4).forEach(game => {
-                const gameDiv = document.createElement('div');
-                gameDiv.className = 'game-popular';
-                gameDiv.style.cursor = 'pointer';
-                gameDiv.innerHTML = `
-                    <img src="${game.background_image || 'images/img.jpeg'}" alt="${game.name}" class="game-image">
-                    <div class="stats">
-                        <span>✰ ${game.PromCalificacion}</span>
-                        <span>💬 ${game.CantidadResenas || 0}</span>
-                    </div>
-                    <div class="game-title">${game.name}</div>
-                `;
-                // Al hacer clic, guarda el ID en localStorage y redirige
-                gameDiv.onclick = function() {
-                    localStorage.setItem('selectedGameId', game.id);
-                    window.location.href = 'game.html';
-                };
-                gamesList.appendChild(gameDiv);
-            });
-           
-        } else {
-            gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
-        }
+    if (searchQuery) {
+        document.getElementById('searchInput').value = searchQuery; 
+        await ejecutarBusqueda(searchQuery);
     } else {
-        gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
+        await cargarJuegos();
     }
 });
+
 
 window.addEventListener('DOMContentLoaded', async function() {
     const gamesList = document.getElementById('games-sec');

@@ -14,25 +14,30 @@
             <img src="images/logo.png" alt="logo" class="logo-img">
         </div>
         <h1>amerlog</h1>
-        <a href="#" id="showLogin" class="clickeable">Iniciar Sesión </a>
-        <a href="#" id="openModal" class="clickeable">Registrarse </a>
-
+        <a href="#" id="showLogin" class="clickeable">Sign in </a>
+        <a href="register.html" id="registerLink" class="clickeable">Create account </a>
+        
         <span id="userDisplay" class="clickeable"></span>
+        <div id="menuOptions" class="menu-options">
+         <a href="profile.html" id="perfilUsuario">Profile</a>
+         <a href="#" id="cerrarSesion">Sign out</a>
+        </div>
 
         
         <form id="loginForm" class="login-form" style="display:none;">
         <input type="text" id="loginUser" placeholder="Usuario" required>
         <input type="password" id="loginPass" placeholder="Contraseña" required>
-        <button type="submit" class="btn">Entrar</button>
-        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancelar</a>
+        <button type="submit" class="btn">Sign in</button>
+        <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancel</a>
     </form>
     <div class="search-wrapper">
-        <label for="searchInput" class="visually-hidden">Buscar juegos</label>
-        <input id="searchInput" type="search" placeholder="Buscar juegos, etiquetas, géneros..." aria-label="Buscar juegos" autocomplete="off" />
+        <label for="searchInput" class="visually-hidden">Search games</label>
+        <input id="searchInput" type="search" placeholder="Search games..." aria-label="Search" autocomplete="off" />
         <div id="searchHint" class="search-hint" aria-live="polite"></div>
         </div>
     </header>
     
+    <button id="btnVolver" class="clickeable" style="margin-bottom: 10px;">← </button>
     <main class="perfil">
     <section class="info-perfil">
          <input type="file" id="inputFoto" name="foto" class="oculto" accept="image/*">
@@ -48,12 +53,12 @@
       <h2>juegos favoritos</h2>
       <div class="list" id="listFav">
         <img src="images/img.png" >
-        <img src="images/img.png"">
+        <img src="images/img.png">
       </div>
     </section>
   </main>
    
-  <script src="main.js"></script>
-  <script src="profile.js"></script>
+  <script src="main.js" defer></script>
+  <script src="profile.js"defer></script>
 </body>
 </html>
