@@ -93,5 +93,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
+  const btnVolver = document.getElementById('btnVolver');
+    
+    if (btnVolver) {
+        btnVolver.addEventListener('click', () => {
+            // Cambia 'index.html' por el nombre de tu página principal si es diferente
+            window.location.href = 'index.html';
+        });
+    }
 
 });
