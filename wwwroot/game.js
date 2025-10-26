@@ -63,6 +63,8 @@ window.addEventListener('DOMContentLoaded', async function() {
        
       `;
         cargarReseñas(gameId);
+
+        setupBacklogButton(gameId, game.name);
     } else {
         document.body.innerHTML = "<p>Error al cargar los detalles del juego.</p>";
     }
@@ -101,6 +103,58 @@ function setupSynopsisToggle() {
   });
 }
 
+// INTENTE hacer lo de backlog no se si funciona, cambia la ruta al backend
+function setupBacklogButton(gameId, gameName) {
+    const backlogButton = document.getElementById('añadirplaylist');
+    const feedback = document.getElementById('feedbackMessage');
+
+    if (!backlogButton || !feedback) {
+        console.warn("No se encontraron los elementos del backlog (botón o feedback).");
+        return;
+    }
+    backlogButton.addEventListener('click', async function() {
+        try {
+            const response = await addGameToBacklogAPI(gameId); 
+            const message = response.message.replace('{gameName}', gameName);
+            showFeedback(message);
+        } catch (error) {
+            showFeedback("Error: Could not add game to backlog.");
+            console.error("Error al llamar a la API del backlog:", error);
+        }
+    });
+}
+
+async function addGameToBacklogAPI(gameId) {
+    console.log(`Enviando al backend... ID: ${gameId}`);
+    try {
+        const response = await fetch('/backlog/add', { //cambia esto no se como es
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId: gameId })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Error ${response.status}`);
+        }
+        return await response.json(); 
+    } catch (error) {
+        console.error("Error en addGameToBacklogAPI:", error);
+        throw error; 
+    }
+}
+function showFeedback(message) {
+  const feedback = document.getElementById('feedbackMessage');
+  if (!feedback) return;
+
+  feedback.textContent = message;
+  feedback.classList.add('show'); 
+
+  // Oculta el mensaje después de 3 segundos
+  setTimeout(() => {
+    feedback.classList.remove('show');
+    setTimeout(() => { feedback.textContent = ''; }, 300); 
+  }, 3000);
+}
 
 
 // configurar interacción con las estrellas

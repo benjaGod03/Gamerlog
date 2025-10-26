@@ -217,11 +217,12 @@ window.addEventListener('DOMContentLoaded', async function() {
     } else {
         await cargarJuegos();
     }
+    await cargarGamesSec();
 });
 
-
-window.addEventListener('DOMContentLoaded', async function() {
-    const gamesList = document.getElementById('games-sec');
+async function cargarGamesSec() {
+const gamesList = document.getElementById('games-sec');
+    if (!gamesList) return;
     gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
 
     const response = await fetch('/games?search=');
@@ -256,7 +257,9 @@ window.addEventListener('DOMContentLoaded', async function() {
     } else {
         gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
     }
-});
+}
+
+
 
 
 const userDisplay = document.getElementById('userDisplay');
