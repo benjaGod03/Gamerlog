@@ -37,6 +37,11 @@ async function cargarJuegos() {
     const gamesList = document.getElementById('gamesList');
     const listTitle = document.getElementById('listTitle');
     const btnVolver = document.getElementById('btnVolver');
+
+        if (!gamesList || !listTitle || !btnVolver) {
+        return; 
+    }
+
     const searchInput = document.getElementById('searchInput');
 
     listTitle.textContent = "Juegos Populares"; // O tu título original
@@ -193,9 +198,12 @@ document.getElementById('searchInput').addEventListener('keydown', async functio
     }
 });
 
-document.getElementById('btnVolver').addEventListener('click', function() {
-    cargarJuegos(); 
-});
+const btnVolver = document.getElementById('btnVolver');
+if (btnVolver) {
+    btnVolver.addEventListener('click', function() {
+        cargarJuegos(); 
+    });
+}
 
 
 window.addEventListener('DOMContentLoaded', async function() {
@@ -284,7 +292,6 @@ cerrarSesion.addEventListener('click', (e) => {
     menuOptions.classList.remove('show');
     actualizarEscenario(null);
 });
-
 
 
 

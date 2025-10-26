@@ -28,7 +28,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 0.2rem;
-  background-color: #2C2340;
+  background-color: #0B0018;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: small;
 }
@@ -114,54 +114,32 @@ body {
 /* 1. Registro y Login  */
 /* =============================== */
 /* formato modal registro */
-.modal {
-  backdrop-filter: blur(5px); /*fondo borroso*/
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 20, 0.6);
-  display: flex;
-  align-content: center;
-  z-index: 9999;
-}
 
-.modal-content {
+
+.reg-content {
   width: 90%;
-  max-width: 400px;
-  padding: 20px;
+  max-width: 45vh;
+  padding: 30px;
   backdrop-filter: blur(10px);
-  background: #150043;
+  background: #0B0018; 
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  margin: auto;
+  margin-left: 2em;
   text-align: center;
   position: relative;
 }
 
-.close {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 1.5em;
-  color: #B0B0B5;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.close:hover {
-  color: #F2F2F7;
-}
 
-.modal-content h2 {
-   text-align: center;
-    padding: 15px 0 15px;
-    border-bottom: 1px solid #A176FF;
-}
-
-.modal-content form {
+.reg-content h2 {
+  text-align: center;
   padding: 10px;
+  margin: 0 0 25px 0;
+  border-bottom: 1px solid #A176FF;
+}
+
+.reg-content form {
+  
   display: flex;
   flex-direction: column;
   gap: 1em;
@@ -170,8 +148,9 @@ body {
 
 .form-group {
   position: relative;
-  margin: 15px 0;
+  margin: 0;
   border-bottom: 1px solid #A176FF;
+  margin: 1em 0 1em 0;
 }
 .form-group input {
   width: 95%;
@@ -209,13 +188,37 @@ body {
 }
 
 .form-group input:focus ~ label, 
-.form-group input:not(:placeholder-shown) ~ label {
+.form-group input:not(:placeholder-shown) ~ label,
+.form-group input:-webkit-autofill ~ label {
     top: -5px;
     color: #A176FF;
+    font-size: 14px;
+    background: #0B0018; 
+    padding: 0 5px;
 }
 
 .form-group input:focus ~ label::before {
     width: 100%;
+}
+
+.form-group input:-webkit-autofill ~ label {
+  top: -5px;
+  color: #A176FF;
+  z-index: 3;
+  font-size: 14px;
+  background: #0B0018;  
+  padding: 0 5px;
+}
+
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover, 
+.form-group input:-webkit-autofill:focus, 
+.form-group input:-webkit-autofill:active {
+    -webkit-text-fill-color: #A176FF; 
+    box-shadow: 0 0 0px 1000px #0B0018 inset, 
+                0 6px 20px rgba(255, 255, 255, 0.25), 
+                0 4px 15px rgba(108, 92, 231, 0.4); 
+    transition: background-color 5000s ease-in-out 0s;
 }
 
 /* formato login */
@@ -242,10 +245,10 @@ body {
 /* =============================== */
 
 .container {
-    padding: 2em;
-    margin: 0 50px;
-    padding-top: 100px;
-    padding-bottom: 2em;
+
+  margin: 0 50px;
+  padding-top: 80px;
+  padding-bottom: 2em;
   padding-left: 2em;
   padding-right: 2em;
 }
@@ -253,7 +256,6 @@ body {
 .container h2 {
   text-align:left;
   margin-bottom: 1.5rem;
-  margin-bottom: 2rem;
   color: #EAE2F8;
   font-size: 1.8rem;
   font-weight: 600;
@@ -359,8 +361,10 @@ body {
 
 .game-page {
   display: grid;
-  grid-template-columns: 400px 1fr 250px;
+  grid-template-columns: minmax(500px, 1.5fr) 2fr 250px;
   gap: 30px;
+  margin: 2em;
+  min-height: 85vh;
 }
 
 .poster {
@@ -371,8 +375,7 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   margin-bottom: 1.5rem;
-  width: 350px;
-  height: 250px;
+ aspect-ratio: 7 / 5;
 }
 
 .poster img {
@@ -411,7 +414,7 @@ body {
   border: 1px solid #4A3F55;
   border-radius: 9px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
@@ -439,7 +442,7 @@ body {
   transition: max-height 0.5s ease-in-out;
 }
 .info-section .synopsis.collapsed {
-  max-height: 140px; 
+  max-height: 200px; 
 }
 
 .info-section .synopsis.collapsed::after {
@@ -476,7 +479,15 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 20px 10px;
+  background-color: #1a0f2a;
+  margin-top: 2em;
 }
+.icon-group{
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+}
+
 .icon{
   display: flex;
   padding: 8px;
@@ -493,15 +504,18 @@ body {
   stroke-width: 1px; 
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: stroke 0.3s ease;
+  transition: stroke 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 0 0px rgba(161, 118, 255, 0));
 }
+
 .icon:hover svg{
+  filter: drop-shadow(0 0 4px rgba(161, 118, 255, 0.8));
   stroke: #F2F2F7;
-  fill: #150043;
 }
 .icon:active svg{
   transform: scale(0.95);
 }
+
 .btn {
   background: #5A4C66;
   color: #F2F2F7;
@@ -625,8 +639,45 @@ body {
 
 /* Estilo para mostrar la calificación en las reseñas cargadas */
 .review-rating {
-    color: #A176FF;
-    font-size: 20px;
+  color: #A176FF;
+  font-size: 20px;
+  gap: 0.5em;
+  align-items: center;
+}
+.rating-score {
+  font-size: 1.5em; 
+  font-weight: bold;
+  color: #B0B0B5; 
+}
+
+
+.precision-rating {
+  display: inline-block; /* Se comporta como un bloque de texto */
+  position: relative;    /* NECESARIO para que .filled-stars se posicione encima */
+  font-size: 20px;       /* Tu tamaño de .review-rating */
+  
+  /* Es buena idea forzar una fuente que sepas que tiene buenas estrellas */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Capa de fondo (estrellas vacías) */
+.precision-rating .background-stars {
+  color: #4A3F55; /* Tu color por defecto (vacío) */
+  /* Importante: previene que el texto se seleccione */
+  user-select: none; 
+}
+
+/* Capa de relleno (estrellas llenas) */
+.precision-rating .filled-stars {
+  position: absolute; /* Se superpone exactamente encima del fondo */
+  top: 0;
+  left: 0;
+  overflow: hidden;    /* ¡La magia! Oculta lo que se pasa del 'width' */
+  white-space: nowrap; /* Evita que las 5 estrellas se partan en dos líneas */
+  color: #A176FF;    /* Tu color de relleno */
+  user-select: none;
+  
+  /* El 'width' se aplica dinámicamente desde el JavaScript */
 }
 
 .reviews-section {
@@ -663,20 +714,42 @@ body {
 }
 
 .review-header {
-  display: flex;
   justify-content: space-between;
+  display: flex;
   align-items: center;
   padding-bottom: 10px;
   margin-bottom: 15px;
   border-bottom: 1px solid #4A3F55;
 }
+.review-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-.review-header img {
+.reviewPhoto {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #5A4C66;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4A3F55;
+  overflow: hidden;
+}
+.reviewPhoto svg {
+  width: 60%;
+  height: 60%;
+  fill: #888099;
+}
+.reviewPhoto[style*="background-image"] svg {
+  
+  display: none;
 }
 
 .review-username {
@@ -699,16 +772,24 @@ body {
 
 .perfil {
   max-width: 900px;
-  margin: 40px auto;
+  margin: 30px auto;
   padding: 0 20px;
 }
 
 .info-perfil {
+  background-color: #2C2340;
   display: flex;
   gap: 20px;
   align-items: center;
   border-bottom: 1px solid #1b2228;
   padding-bottom: 25px;
+  border-radius: 12px;
+}
+
+.info-perfil .btn {
+  margin: 5px;
+  align-self: flex-start;
+  background-color: #2C2340;
 }
 
 .foto-perfil {
@@ -716,11 +797,14 @@ body {
   height: 120px;
   border-radius: 50%;
   border: 3px solid rgba(255, 255, 255, 0.5);
-  object-fit: cover;
   margin-bottom: 16px;
+  margin-top: 25px;
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
   cursor: pointer;
   transition: transform 0.2s ease;
+}
+.foto-perfil img {
+  object-fit: cover;
 }
 
 .foto-perfil:hover {
@@ -733,7 +817,7 @@ body {
 
 .detalles h1 {
   margin: 0;
-  color: #fff;
+  color: #EAE2F8;
   font-size: 1.5em;
 }
 
@@ -827,7 +911,19 @@ body {
 }
 
 
+@media (max-width: 1500px) and (min-width: 768px) {
+  .game-page{
+    grid-template-columns: 400px 1fr 250px;
+  }
+  .poster{
+    width: 350px;
+    height: 250px;
+  }
+  .info-section .synopsis.collapsed {
+  max-height: 140px; 
+  }
 
+}
 
 
 
