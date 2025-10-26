@@ -101,5 +101,65 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'index.html';
         });
     }
-
+    await fetchAndDisplayBacklog();
 });
+
+
+
+async function fetchAndDisplayBacklog() {
+    try {
+        const gameList = await getBacklogFromAPI();
+        displayBacklog(gameList);
+    } catch (error) {
+        // Muestra un error si el fetch falla
+        const listContainer = document.getElementById('backlogListContainer');
+        if (listContainer) {
+            listContainer.innerHTML = '<li>Could not load your backlog.</li>';
+        }
+    }
+}
+
+//SI NO ANDA BORRALO
+async function getBacklogFromAPI() {
+    console.log("Pidiendo backlog al backend...");
+    try {
+        //cambia esto no se como es el get(?
+        const response = await fetch('/backlog/get', { credentials: 'same-origin' }); 
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Asume que el backend devuelve { success: true, data: [juego1, juego2] }
+        return data.success ? data.data : [];
+
+    } catch (error) {
+        console.error("Error en getBacklogFromAPI:", error);
+        throw error;
+    }
+}
+function displayBacklog(gameList) {
+    const listContainer = document.getElementById('backlogListContainer');
+    
+    if (!listContainer) {
+        console.warn("No se encontró el elemento #backlogListContainer en profile.html");
+        return;
+    }
+
+    listContainer.innerHTML = ''; // Limpia el "Cargando..."
+
+    if (!gameList || gameList.length === 0) {
+        listContainer.innerHTML = '<li>Your backlog is empty.</li>';
+        return;
+    }
+
+    // Crea un <li> por cada juego
+    gameList.forEach(game => {
+        const gameItem = document.createElement('li');
+        // Asume que el backend devuelve objetos de juego con 'name'
+        // Si solo devuelve títulos, usa: gameItem.textContent = game;
+        gameItem.textContent = game.name; 
+        listContainer.appendChild(gameItem);
+    });
+}

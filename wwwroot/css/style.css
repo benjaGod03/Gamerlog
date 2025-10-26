@@ -833,11 +833,11 @@ body {
 }
 
 
-.juegos-favoritos {
+.juegos-list {
   margin-top: 25px;
 }
 
-.juegos-favoritos h2 {
+.juegos-list h2 {
   color: #fff;
   margin-bottom: 15px;
   font-size: 1.2em;
@@ -863,6 +863,27 @@ body {
 .editable {
   cursor: text;
   border-bottom: 1px dashed transparent;
+}
+
+#feedbackMessage {
+  /* Oculto por defecto */
+  opacity: 0; 
+  
+  /* Estilos del texto */
+  color: #28a745; /* Un color verde de éxito */
+  font-weight: bold;
+  text-align: center;
+  margin-top: 15px; /* Espacio desde los botones */
+  
+  /* Transición suave para aparecer y desaparecer */
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Crearemos una clase 'show' con JavaScript 
+  para hacer visible el mensaje.
+*/
+#feedbackMessage.show {
+  opacity: 1;
 }
 
 

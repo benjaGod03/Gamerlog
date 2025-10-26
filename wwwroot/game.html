@@ -25,8 +25,8 @@
 
         
         <form id="loginForm" class="login-form" style="display:none;">
-        <input type="text" id="loginUser" placeholder="Usuario" required>
-        <input type="password" id="loginPass" placeholder="Contraseña" required>
+        <input type="text" id="loginUser" placeholder="Usuarname" required>
+        <input type="password" id="loginPass" placeholder="password" required>
         <button type="submit" class="btn">Sign in</button>
         <a href="#" id="cancelLogin" class="btn" style="margin-left:8px;">Cancel</a>
     </form>
@@ -40,7 +40,7 @@
    <section class="game-page">
         <div class="poster-section">
             <div class="poster">
-                <img src="images/img.png" alt="juego" id="gameImage" >
+                <img src="images/img.png" alt="game" id="gameImage" >
                 
                 <div class="stats">
                     <span id="gameRating">✰</span>
@@ -55,7 +55,7 @@
             <p class="Plataformas" id="gamePlatforms"></p>
             <p class="desarrollador" id="gameDevelopers"></p>
             <p class="synopsis" id="gameSynopsis"></p>
-            <button id="toggleSynopsisBtn" class="toggle-btn" style="display: none;">Mostrar Más</button>
+            <button id="toggleSynopsisBtn" class="toggle-btn" style="display: none;">Show more</button>
         </div>
         <aside class="actions">
             <div class="review-rating" id="gameStars"></div>
@@ -70,12 +70,14 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 20"><path d="M20.808 11.079C19.829 16.132 12 20.5 12 20.5s-7.829-4.368-8.808-9.421C2.227 6.1 5.066 3.5 8 3.5a4.444 4.444 0 0 1 4 2 4.444 4.444 0 0 1 4-2c2.934 0 5.773 2.6 4.808 7.579z"/></svg>
             </button>
             </div>
-            <button class="btn" id="añadirplaylist">➕ Playlist</button>
-            <button class="btn" id="btnScrollToReview">➕ Añadir Reseña</button>
+            <button class="btn" id="añadirplaylist">➕ Add to backlog</button>
+            <button class="btn" id="btnScrollToReview">➕ Add review</button>
+
+            <p id="feedbackMessage"></p>
         </aside>
     </section>
     <hr class="linea">
-    <h2 class="titulo">Reseñas </h2>
+    <h2 class="titulo">Review </h2>
     <div class="dejar-reseña">
         <div class="rating" id="rating-stars">
             <span class="star" data-value="5">★</span>
@@ -84,13 +86,15 @@
             <span class="star" data-value="2">★</span>
             <span class="star" data-value="1">★</span>
         </div>
-        <textarea id="reviewText" class="texto" placeholder="Escribí tu reseña aquí..."></textarea>
-        <button onclick="agregarReseña()" class="btn" id="saveReview">Publicar Reseña</button>
+        <textarea id="reviewText" class="texto" placeholder="Write your review here..."></textarea>
+        <button onclick="agregarReseña()" class="btn" id="saveReview">Post Review</button>
         </div>
         
     <section class="reviews-section" id="reviewsSection">
         <div id="reviewList"></div>
     </section>
+
+    
 
     <script src="main.js" defer></script>
     <script src="game.js" defer></script>
