@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para AddCookie
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -557,6 +558,236 @@ app.MapGet("/perfil", async (HttpContext context) =>
     return Results.Json(new { authenticated = false });
 });
 
+app.MapPost("/listas", async (HttpContext context) =>
+{
+    var req = await JsonSerializer.DeserializeAsync<ListaRequestDTO>(
+    context.Request.Body,
+    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
+
+    if (req == null || req.Juego == 0 || string.IsNullOrWhiteSpace(req.Funcion))
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Datos inválidos");
+        return Results.BadRequest();
+    }
+
+    var funcion = req.Funcion.Trim().ToLowerInvariant();
+
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        return Results.Unauthorized();
+    }
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+    SqlCommand exists = new SqlCommand("SELECT COUNT(1) FROM Listas WHERE Correo = @correo AND Juego = @juego", connection);
+    exists.Parameters.AddWithValue("@correo", email);
+    exists.Parameters.AddWithValue("@juego", req.Juego);
+    int count = await exists.ExecuteScalarAsync() is int c ? c : 0;
+    Console.WriteLine($"funcion: {funcion}");
+    if (count == 0)
+    {
+        SqlCommand command;
+        if (funcion == "backlog")
+        {
+            command = new SqlCommand(
+                "INSERT INTO Listas (Correo, Juego, Pendiente) VALUES (@usuario, @juego, 1)",
+                connection
+            );
+        }
+        else if (funcion == "played")
+        {
+            command = new SqlCommand(
+                "INSERT INTO Listas (Correo, Juego, Jugado) VALUES (@usuario, @juego,  1)",
+                connection
+            );
+        }
+        else if (funcion == "like")
+        {
+            command = new SqlCommand(
+                "INSERT INTO Listas (Correo, Juego, Lik) VALUES (@usuario, @juego,  1)",
+                connection
+            );
+        }
+        else
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Función desconocida");
+            return Results.BadRequest();
+        }
+
+        command.Parameters.AddWithValue("@usuario", email);
+        command.Parameters.AddWithValue("@juego", req.Juego);
+
+        await command.ExecuteNonQueryAsync();
+
+        return Results.Ok();
+    }
+    else
+    {
+        SqlCommand command;
+        if (funcion == "backlog")
+        {
+            command = new SqlCommand(
+                "UPDATE Listas SET Pendiente = 1 - Pendiente WHERE Correo = @usuario AND Juego = @juego",
+                connection
+            );
+        }
+        else if (funcion == "played")
+        {
+            command = new SqlCommand(
+                "UPDATE Listas SET Jugado = 1 - Jugado WHERE Correo = @usuario AND Juego = @juego",
+                connection
+            );
+        }
+        else if (funcion == "like")
+        {
+            command = new SqlCommand(
+                "UPDATE Listas SET Lik = 1 - Lik WHERE Correo = @usuario AND Juego = @juego",
+                connection
+            );
+    
+        }
+        else
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsync("Función desconocida");
+            return Results.BadRequest();
+        }
+
+        command.Parameters.AddWithValue("@usuario", email);
+        command.Parameters.AddWithValue("@juego", req.Juego);
+
+        await command.ExecuteNonQueryAsync();
+
+        return Results.Ok();
+    }
+});
+
+app.MapGet("/EstadoBotones", async (HttpContext context) =>
+{
+    var juegoStr = context.Request.Query["gameId"].ToString();
+    if(!int.TryParse(juegoStr, out int juego))
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("ID de juego inválido");
+        return;
+    }
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("No autenticado");
+        return;
+    }
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(
+        "SELECT Pendiente, Jugado, Lik FROM Listas WHERE Correo = @correo AND Juego = @juegoId",
+        connection
+    );
+    command.Parameters.AddWithValue("@correo", email);
+    command.Parameters.AddWithValue("@juegoId", juego);
+
+    using var reader = await command.ExecuteReaderAsync();
+    if (await reader.ReadAsync())
+    {
+        var pendiente = reader[0];
+        var jugado = reader[1];
+        var like = reader[2];
+        Console.WriteLine($"Pendiente: {pendiente}, Jugado: {jugado}, Like: {like}");
+
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new
+        {
+            pendiente,
+            jugado,
+            like
+        }));
+    }
+    else
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new
+        {
+            pendiente = false,
+            jugado = false,
+            like = false
+        }));
+    }
+});
+
+app.MapGet("/backlog", async (HttpContext context) =>
+{
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("No autenticado");
+        return;
+    }
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(
+        "SELECT Juego FROM Listas WHERE Correo = @correo AND Pendiente = 1",
+        connection
+    );
+    command.Parameters.AddWithValue("@correo", email);
+
+    Console.WriteLine("Obteniendo backlog para: " + email);
+
+    var juegos = new List<int>();
+    using var reader = await command.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        juegos.Add(reader.GetInt32(0));
+    }
+    Console.WriteLine($"Juegos en backlog: {string.Join(", ", juegos)}");
+
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(JsonSerializer.Serialize(juegos));
+});
+
+app.MapGet("/played", async (HttpContext context) =>
+{
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("No autenticado");
+        return;
+    }
+
+    using var connection = new SqlConnection(connectionString);
+    await connection.OpenAsync();
+
+    var command = new SqlCommand(
+        "SELECT Juego FROM Listas WHERE Correo = @correo AND Jugado = 1",
+        connection
+    );
+    command.Parameters.AddWithValue("@correo", email);
+
+    Console.WriteLine("Obteniendo backlog para: " + email);
+
+    var juegos = new List<int>();
+    using var reader = await command.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        juegos.Add(reader.GetInt32(0));
+    }
+    Console.WriteLine($"Juegos en backlog: {string.Join(", ", juegos)}");
+
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(JsonSerializer.Serialize(juegos));
+});
+
+
 
 
 
@@ -577,7 +808,15 @@ public class LoginRequest
 public class ResenaCreacionDTO
 {
     // Las mayúsculas deben coincidir con la clave JSON enviada ("Texto", "JuegoId")
-    public string Texto { get; set; } 
+    public string Texto { get; set; }
     public int Juego { get; set; } // O int, dependiendo de cómo manejes los IDs
     public int Rating { get; set; } // Nuevo campo para el rating   
+}
+
+public class ListaRequestDTO
+{
+    public int Juego { get; set; }
+    public string Funcion { get; set; }
+    public bool? Played { get; set; }
+    public bool? Liked { get; set; }
 }
