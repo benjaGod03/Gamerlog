@@ -63,11 +63,12 @@ window.addEventListener('DOMContentLoaded', async function() {
        
       `;
         cargarReseñas(gameId);
-
-        setupBacklogButton(gameId, game.name);
+        
+        setupActionButtons(gameId, game.name);
     } else {
         document.body.innerHTML = "<p>Error al cargar los detalles del juego.</p>";
     }
+
 });
 
 
@@ -103,34 +104,14 @@ function setupSynopsisToggle() {
   });
 }
 
-// INTENTE hacer lo de backlog no se si funciona, cambia la ruta al backend
-function setupBacklogButton(gameId, gameName) {
-    const backlogButton = document.getElementById('añadirplaylist');
-    const feedback = document.getElementById('feedbackMessage');
-
-    if (!backlogButton || !feedback) {
-        console.warn("No se encontraron los elementos del backlog (botón o feedback).");
-        return;
-    }
-    backlogButton.addEventListener('click', async function() {
-        try {
-            const response = await addGameToBacklogAPI(gameId); 
-            const message = response.message.replace('{gameName}', gameName);
-            showFeedback(message);
-        } catch (error) {
-            showFeedback("Error: Could not add game to backlog.");
-            console.error("Error al llamar a la API del backlog:", error);
-        }
-    });
-}
 
 async function addGameToBacklogAPI(gameId) {
     console.log(`Enviando al backend... ID: ${gameId}`);
     try {
-        const response = await fetch('/backlog/add', { //cambia esto no se como es
+        const response = await fetch('/listas', { //cambia esto no se como es
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gameId: gameId })
+            body: JSON.stringify({ juego: gameId, funcion: "backlog" })
         });
         if (!response.ok) {
             const errorData = await response.json();
@@ -181,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   setupScrollToReview();
 });
-
 
 async function agregarReseña() {
   const contenedor = document.getElementById('reviewList');
@@ -304,6 +284,114 @@ async function cargarReseñas(gameID) {
     }
 }
 
+async function setupActionButtons(gameId, gameName) {
+  const playedBtn = document.getElementById('Jugado');
+  const likeBtn = document.getElementById('like');
+  const backlogButton = document.getElementById('añadirplaylist');
+  const feedback = document.getElementById('feedbackMessage');
+  let gameIdint = parseInt(gameId, 10);
+
+  const estado = await actualizarBotonesEstado(gameIdint);
+  if (playedBtn) {
+    if (estado.played) playedBtn.classList.add('active'); else playedBtn.classList.remove('active');
+  }
+  if (likeBtn) {
+    if (estado.liked) likeBtn.classList.add('active'); else likeBtn.classList.remove('active');
+  }
+  if (backlogButton) {
+    if (estado.pendiente) backlogButton.classList.add('added'); else backlogButton.classList.remove('added');
+  }
+  if (playedBtn) {
+    playedBtn.addEventListener('click', async () => {
+      try {
+       // toggle visual
+        playedBtn.classList.toggle('active');
+        const isPlayed = playedBtn.classList.contains('active');
+        // enviar estado al backend
+        await fetch('/listas', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ juego: gameIdint, funcion: "played" })
+        });
+      } catch (err) {
+        console.error('Error toggling played:', err);
+        // revert visual on error
+        playedBtn.classList.toggle('active');
+      }
+    });
+  }
+
+  if (likeBtn) {
+    likeBtn.addEventListener('click', async () => {
+      try {
+        likeBtn.classList.toggle('active');
+        const isLiked = likeBtn.classList.contains('active');
+       await fetch('/listas', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ juego: gameIdint, funcion: "like"})
+       });
+      } catch (err) {
+        console.error('Error toggling like:', err);
+        likeBtn.classList.toggle('active');
+      }
+    });
+  }
+  if (backlogButton) {
+    backlogButton.addEventListener('click', async () => {
+      try {
+        backlogButton.classList.add('loading');
+        const response = await addGameToBacklogAPI(gameIdint);
+        // response esperado: { message: "..." }
+        const message = response && response.message
+          ? response.message.replace('{gameName}', gameName || '')
+          : 'Añadido al backlog';
+
+        showFeedback(message);
+
+        backlogButton.classList.remove('loading');
+        backlogButton.classList.add('added');
+
+        // despachar evento custom por si hay listeners adicionales
+        backlogButton.dispatchEvent(new CustomEvent('backlog:added', { detail: { message } }));
+      } catch (error) {
+        console.error('Error al añadir a backlog:', error);
+        showFeedback('Error: no se pudo añadir al backlog.');
+        backlogButton.classList.remove('loading');
+      }
+    });
+  }
+  actualizarBotonesEstado(gameIdint);
+}
+
+async function actualizarBotonesEstado(gameIdint) {
+    try {
+        const response = await fetch(`/EstadoBotones?gameId=${gameIdint}`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            console.error('Error al obtener el estado de los botones:', response.statusText);
+            return null;
+        }
+
+        const data = await response.json();
+        return {
+            played: !!(data.played || data.Jugado || data.jugado),
+            liked: !!(data.liked || data.MeGusta || data.meGusta || data.liked),
+            pendiente: !!(data.pendiente || data.Pendiente)
+        };
+
+    } catch (error) {
+        console.error('Fallo de red al obtener el estado de los botones:', error);
+        return null;
+    }
+}
+
 function setupScrollToReview() {
   const btnScroll = document.getElementById('btnScrollToReview');
   const reviewTextarea = document.getElementById('reviewText');
@@ -318,3 +406,4 @@ function setupScrollToReview() {
     });
   }
 }
+

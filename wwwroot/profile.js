@@ -97,11 +97,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (btnVolver) {
         btnVolver.addEventListener('click', () => {
-            // Cambia 'index.html' por el nombre de tu página principal si es diferente
+            
             window.location.href = 'index.html';
         });
     }
     await fetchAndDisplayBacklog();
+    await fetchAndDisplayPlayed();
 });
 
 
@@ -109,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function fetchAndDisplayBacklog() {
     try {
         const gameList = await getBacklogFromAPI();
+        console.log("Backlog recibido:", gameList);
         displayBacklog(gameList);
     } catch (error) {
         // Muestra un error si el fetch falla
@@ -124,7 +126,7 @@ async function getBacklogFromAPI() {
     console.log("Pidiendo backlog al backend...");
     try {
         //cambia esto no se como es el get(?
-        const response = await fetch('/backlog/get', { credentials: 'same-origin' }); 
+        const response = await fetch('/backlog', { credentials: 'same-origin' }); 
 
         if (!response.ok) {
             throw new Error(`Error ${response.status}`);
@@ -132,14 +134,15 @@ async function getBacklogFromAPI() {
         
         const data = await response.json();
         // Asume que el backend devuelve { success: true, data: [juego1, juego2] }
-        return data.success ? data.data : [];
+        return data
 
     } catch (error) {
         console.error("Error en getBacklogFromAPI:", error);
         throw error;
     }
 }
-function displayBacklog(gameList) {
+
+async function displayBacklog(gameList) {
     const listContainer = document.getElementById('backlogListContainer');
     
     if (!listContainer) {
@@ -148,18 +151,128 @@ function displayBacklog(gameList) {
     }
 
     listContainer.innerHTML = ''; // Limpia el "Cargando..."
-
     if (!gameList || gameList.length === 0) {
         listContainer.innerHTML = '<li>Your backlog is empty.</li>';
         return;
     }
 
-    // Crea un <li> por cada juego
-    gameList.forEach(game => {
-        const gameItem = document.createElement('li');
-        // Asume que el backend devuelve objetos de juego con 'name'
-        // Si solo devuelve títulos, usa: gameItem.textContent = game;
-        gameItem.textContent = game.name; 
-        listContainer.appendChild(gameItem);
-    });
+    
+    for (const gameId of gameList) {
+        
+        
+        try {
+            
+            const response = await fetch(`/game?id=${encodeURIComponent(gameId)}`); 
+            
+            if (!response.ok) throw new Error('No se encontraron detalles');
+
+            const gamedet = await response.json(); 
+
+            // Crea el elemento <li>
+            const gameItem = document.createElement('li');
+            gameItem.textContent = gamedet.name; // Usa el nombre de los detalles
+            gameItem.innerHTML = `
+                    <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
+                    <div class="stats">
+                        <span>✰ ${gamedet.PromCalificacion}</span>
+                        <span>💬 ${gamedet.CantidadResenas || 0}</span>
+                    </div>
+                    <div class="game-title">${gamedet.name}</div>
+                `;
+            listContainer.appendChild(gameItem);
+
+        } catch (error) {
+            console.error(`Error al obtener detalles del juego ${gameId}:`, error);
+            // Opcional: añade un item de error
+            const errorItem = document.createElement('li');
+            errorItem.textContent = `Error al cargar juego ${gameId}`;
+            listContainer.appendChild(errorItem);
+        }
+    }
+    
+}
+
+async function displayPlayed(gameList) {
+    const listContainer1 = document.getElementById('playedListContainer');
+    
+    if (!listContainer1) {
+        console.warn("No se encontró el elemento #backlogListContainer en profile.html");
+        return;
+    }
+
+    listContainer1.innerHTML = ''; // Limpia el "Cargando..."
+    if (!gameList || gameList.length === 0) {
+        listContainer1.innerHTML = '<li>Your backlog is empty.</li>';
+        return;
+    }
+
+    
+    for (const gameId of gameList) {
+        
+        
+        try {
+            
+            const response = await fetch(`/game?id=${encodeURIComponent(gameId)}`); 
+            
+            if (!response.ok) throw new Error('No se encontraron detalles');
+
+            const gamedet = await response.json(); 
+
+            // Crea el elemento <li>
+            const gameItem = document.createElement('li');
+            gameItem.textContent = gamedet.name; // Usa el nombre de los detalles
+            gameItem.innerHTML = `
+                    <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
+                    <div class="stats">
+                        <span>✰ ${gamedet.PromCalificacion}</span>
+                        <span>💬 ${gamedet.CantidadResenas || 0}</span>
+                    </div>
+                    <div class="game-title">${gamedet.name}</div>
+                `;
+            listContainer1.appendChild(gameItem);
+
+        } catch (error) {
+            console.error(`Error al obtener detalles del juego ${gameId}:`, error);
+            // Opcional: añade un item de error
+            const errorItem = document.createElement('li');
+            errorItem.textContent = `Error al cargar juego ${gameId}`;
+            listContainer1.appendChild(errorItem);
+        }
+    }
+    
+}
+
+async function fetchAndDisplayPlayed(){
+  try {
+        const gameList = await getPlayedFromAPI();
+        console.log("Backlog recibido:", gameList);
+        displayPlayed(gameList);
+    } catch (error) {
+        // Muestra un error si el fetch falla
+        const listContainer = document.getElementById('backlogListContainer');
+        if (listContainer) {
+            listContainer.innerHTML = '<li>Could not load your backlog.</li>';
+        }
+    }
+    
+}
+
+async function getPlayedFromAPI() {
+    console.log("Pidiendo backlog al backend...");
+    try {
+        //cambia esto no se como es el get(?
+        const response = await fetch('/played', { credentials: 'same-origin' }); 
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Asume que el backend devuelve { success: true, data: [juego1, juego2] }
+        return data
+
+    } catch (error) {
+        console.error("Error en getBacklogFromAPI:", error);
+        throw error;
+    }
 }
