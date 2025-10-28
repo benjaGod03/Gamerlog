@@ -101,11 +101,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'index.html';
         });
     }
+
+    initializeAllScrollLists();
     await fetchAndDisplayBacklog();
     await fetchAndDisplayPlayed();
 });
-
-
 
 async function fetchAndDisplayBacklog() {
     try {
@@ -170,7 +170,8 @@ async function displayBacklog(gameList) {
 
             // Crea el elemento <li>
             const gameItem = document.createElement('li');
-            gameItem.textContent = gamedet.name; // Usa el nombre de los detalles
+            gameItem.className = 'games';
+             // Usa el nombre de los detalles
             gameItem.innerHTML = `
                     <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
                     <div class="stats">
@@ -186,10 +187,37 @@ async function displayBacklog(gameList) {
             // Opcional: añade un item de error
             const errorItem = document.createElement('li');
             errorItem.textContent = `Error al cargar juego ${gameId}`;
+            errorItem.className = 'games';
             listContainer.appendChild(errorItem);
         }
     }
     
+}
+
+function initializeAllScrollLists() {  
+    const allWrappers = document.querySelectorAll('.list-wrapper');
+
+    allWrappers.forEach(wrapper => {
+        const listElement = wrapper.querySelector('.list ul'); // Busca el <ul> dentro de .list
+        const scrollLeftBtn = wrapper.querySelector('.scroll-btn.left');
+        const scrollRightBtn = wrapper.querySelector('.scroll-btn.right');
+
+        if (listElement && scrollLeftBtn && scrollRightBtn) {
+            
+            const scrollAmount = 280 + 15; 
+
+            scrollRightBtn.addEventListener('click', () => {
+                listElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+
+            scrollLeftBtn.addEventListener('click', () => {
+                listElement.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            });
+
+        } else {
+            console.warn("Se encontró un .list-wrapper pero le faltan elementos (ul, .left, o .right).");
+        }
+    });
 }
 
 async function displayPlayed(gameList) {
@@ -220,7 +248,9 @@ async function displayPlayed(gameList) {
 
             // Crea el elemento <li>
             const gameItem = document.createElement('li');
+            gameItem.className = 'games';
             gameItem.textContent = gamedet.name; // Usa el nombre de los detalles
+            
             gameItem.innerHTML = `
                     <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
                     <div class="stats">
@@ -236,6 +266,7 @@ async function displayPlayed(gameList) {
             // Opcional: añade un item de error
             const errorItem = document.createElement('li');
             errorItem.textContent = `Error al cargar juego ${gameId}`;
+            errorItem.className = 'games';
             listContainer1.appendChild(errorItem);
         }
     }

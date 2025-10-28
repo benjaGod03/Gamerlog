@@ -108,7 +108,7 @@ function setupSynopsisToggle() {
 async function addGameToBacklogAPI(gameId) {
     console.log(`Enviando al backend... ID: ${gameId}`);
     try {
-        const response = await fetch('/listas', { //cambia esto no se como es
+        const response = await fetch('/listas', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ juego: gameId, funcion: "backlog" })
