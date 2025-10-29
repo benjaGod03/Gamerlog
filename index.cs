@@ -174,9 +174,10 @@ app.MapGet("/games", async (HttpContext context) =>
 {
     string apiKey = "98030a434a584555a2ff854c4a5fd74b";
     string query = context.Request.Query["search"];
+    Console.WriteLine("Búsqueda de juegos: " + query);
     string url = string.IsNullOrWhiteSpace(query)
         ? $"https://api.rawg.io/api/games?key={apiKey}&ordering=-added&exclude_additions=true&page_size=20"
-        : $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=20";
+        : $"https://api.rawg.io/api/games?key={apiKey}&search={Uri.EscapeDataString(query)}&ordering=-added&exclude_additions=true&page_size=20&search_exact=true";
 
     var rawgResponse = await httpClient.GetStringAsync(url);
     var root = JsonNode.Parse(rawgResponse);
@@ -544,7 +545,7 @@ app.MapGet("/perfil", async (HttpContext context) =>
 
     using var conn = new SqlConnection(connectionString);
     await conn.OpenAsync();
-    using var cmd = new SqlCommand("SELECT Usuario, Correo, Foto FROM Usuarios WHERE Correo = @correo", conn);
+    using var cmd = new SqlCommand("SELECT Usuario, Correo, Foto, Bio, Ubicacion FROM Usuarios WHERE Correo = @correo", conn);
     cmd.Parameters.AddWithValue("@correo", email);
     using var reader = await cmd.ExecuteReaderAsync();
     if (await reader.ReadAsync())
@@ -552,7 +553,9 @@ app.MapGet("/perfil", async (HttpContext context) =>
         var usuario = reader.IsDBNull(0) ? null : reader.GetString(0);
         var correo = reader.IsDBNull(1) ? null : reader.GetString(1);
         var foto = reader.IsDBNull(2) ? null : reader.GetString(2);
-        return Results.Json(new { authenticated = true, usuario, correo, fotoPath = foto });
+        var bio = reader.IsDBNull(3) ? null : reader.GetString(3);
+        var location = reader.IsDBNull(4) ? null : reader.GetString(4);
+        return Results.Json(new { authenticated = true, usuario, correo, fotoPath = foto, bio, location });
     }
 
     return Results.Json(new { authenticated = false });
@@ -631,14 +634,14 @@ app.MapPost("/listas", async (HttpContext context) =>
         if (funcion == "backlog")
         {
             command = new SqlCommand(
-                "UPDATE Listas SET Pendiente = 1 - Pendiente WHERE Correo = @usuario AND Juego = @juego",
+                "UPDATE Listas SET Pendiente = 1 - Pendiente,Jugado = 0 WHERE Correo = @usuario AND Juego = @juego",
                 connection
             );
         }
         else if (funcion == "played")
         {
             command = new SqlCommand(
-                "UPDATE Listas SET Jugado = 1 - Jugado WHERE Correo = @usuario AND Juego = @juego",
+                "UPDATE Listas SET Jugado = 1 - Jugado,Pendiente = 0 WHERE Correo = @usuario AND Juego = @juego",
                 connection
             );
         }
@@ -787,7 +790,54 @@ app.MapGet("/played", async (HttpContext context) =>
     await context.Response.WriteAsync(JsonSerializer.Serialize(juegos));
 });
 
+app.MapPost("/perfil/update", async (HttpContext context) =>
+{
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrEmpty(email))
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("No autenticado");
+        return Results.Unauthorized();
+    }
+    var payload = await JsonSerializer.DeserializeAsync<ProfileUpdateDTO>(
+        context.Request.Body,
+        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+    );
 
+    Console.WriteLine($"Campo a actualizar: {payload?.Campo}, Nuevo valor: {payload?.Valor}");
+    
+    if (payload == null || string.IsNullOrWhiteSpace(payload.Campo) || string.IsNullOrWhiteSpace(payload.Valor))
+    {
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsync("Datos inválidos");
+        return Results.BadRequest();
+    }
+
+    var allowed = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "perfilUsername", "Usuario" },
+        { "perfilBio", "Bio" },
+        { "perfilLocation", "Ubicacion" } // ajusta si tu columna se llama distinto
+    };
+
+    if (!allowed.TryGetValue(payload.Campo, out var column))
+        return Results.BadRequest("Campo no permitido");
+
+    if (payload.Campo == "perfilUsername")
+        payload.Campo = "Usuario";
+    else if (payload.Campo == "perfilBio")
+        payload.Campo = "Bio";
+    else if (payload.Campo == "perfilLocation")
+        payload.Campo = "Ubicacion";
+    using var conn = new SqlConnection(connectionString);
+    await conn.OpenAsync();
+    var cmd = new SqlCommand($"UPDATE Usuarios SET {payload.Campo} = @valor WHERE Correo = @correo", conn);
+    cmd.Parameters.AddWithValue("@valor", payload.Valor);
+    cmd.Parameters.AddWithValue("@correo", email);
+    var rows = await cmd.ExecuteNonQueryAsync();
+
+    return rows > 0 ? Results.Ok() : Results.StatusCode(500);
+});
 
 
 
@@ -819,4 +869,10 @@ public class ListaRequestDTO
     public string Funcion { get; set; }
     public bool? Played { get; set; }
     public bool? Liked { get; set; }
+}
+
+public class ProfileUpdateDTO
+{
+    public string Campo { get; set; }
+    public string Valor { get; set; }
 }
