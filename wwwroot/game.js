@@ -382,7 +382,7 @@ async function actualizarBotonesEstado(gameIdint) {
         const data = await response.json();
         return {
             played: !!(data.played || data.Jugado || data.jugado),
-            liked: !!(data.liked || data.MeGusta || data.meGusta || data.liked),
+            liked: !!(data.like || data.MeGusta || data.meGusta || data.like),
             pendiente: !!(data.pendiente || data.Pendiente)
         };
 

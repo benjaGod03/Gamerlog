@@ -296,5 +296,17 @@ cerrarSesion.addEventListener('click', (e) => {
     actualizarEscenario(null);
 });
 
+function showFeedback(message) {
+  const feedback = document.getElementById('feedbackMessage');
+  if (!feedback) return;
 
+  feedback.textContent = message;
+  feedback.classList.add('show'); 
+
+  // Oculta el mensaje después de 3 segundos
+  setTimeout(() => {
+    feedback.classList.remove('show');
+    setTimeout(() => { feedback.textContent = ''; }, 300); 
+  }, 3000);
+}
 
