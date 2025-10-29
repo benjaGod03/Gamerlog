@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const data = await resp.json();
       if (data.authenticated) {
         if (perfilUsername) perfilUsername.textContent = data.usuario || '';
+        if( perfilBio) perfilBio.textContent = data.bio || 'Tell us about yourself...';
+        if (perfilLocation) perfilLocation.textContent = data.location || 'Set Country';
         // si existe foto en BDD, usarla (campo fotoPath)
         if (data.fotoPath && fotoPerfil) {
           fotoPerfil.src = data.fotoPath;
@@ -84,12 +86,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // guardar campos editables localmente (como antes)
-  const camposEditables = [perfilUsername, perfilBio, perfilLocation];
-  camposEditables.forEach((campo) => {
-    if (!campo) return;
-    campo.addEventListener('blur', () => {
-      localStorage.setItem(campo.id, campo.textContent);
+
+  const camposEditables = [
+    {el: perfilUsername, campo: 'perfilUsername'},
+    {el: perfilBio, campo: 'perfilBio'},
+    {el: perfilLocation, campo: 'perfilLocation'}
+  ];
+
+  function debounce(fn, ms=600){
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), ms);
+    }
+  }
+
+  async function saveProfileField(campo, valor) {
+    try {
+      console.log(`Guardando campo ${campo} con valor ${valor}`);
+      const resp = await fetch('/perfil/update', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ campo, valor })
+      });
+      if (!resp.ok) {
+        console.error('Error actualizando perfil:', resp.status, await resp.text());
+        showFeedback('Error al guardar');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error actualizando perfil:', e);
+      return false;
+    } 
+  }
+
+  const debouncedSave = debounce(async (campo, valor) => {
+    await saveProfileField(campo, valor);
+  },700);
+
+  camposEditables.forEach(({el, campo}) => {
+    if (!el) return
+    el.addEventListener('input', (e) => {
+        const valor = e.target.textContent;
+        debouncedSave(campo, valor);
+    });
+    el.addEventListener('blur', (e) => {
+        const valor = e.target.textContent;
+        localStorage.setItem(el.id, valor); // guardar localmente
+        saveProfileField(campo, valor);
     });
   });
 
@@ -306,4 +352,18 @@ async function getPlayedFromAPI() {
         console.error("Error en getBacklogFromAPI:", error);
         throw error;
     }
+}
+
+function showFeedback(message) {
+  const feedback = document.getElementById('feedbackMessage');
+  if (!feedback) return;
+
+  feedback.textContent = message;
+  feedback.classList.add('show'); 
+
+  // Oculta el mensaje después de 3 segundos
+  setTimeout(() => {
+    feedback.classList.remove('show');
+    setTimeout(() => { feedback.textContent = ''; }, 300); 
+  }, 3000);
 }
