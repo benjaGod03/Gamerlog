@@ -167,7 +167,7 @@ async function fetchAndDisplayBacklog() {
     }
 }
 
-//SI NO ANDA BORRALO
+
 async function getBacklogFromAPI() {
     console.log("Pidiendo backlog al backend...");
     try {
