@@ -115,10 +115,10 @@ async function addGameToBacklogAPI(gameId) {
             body: JSON.stringify({ juego: gameId, funcion: "backlog" })
         });
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Error ${response.status}`);
-        }
-        return await response.json(); 
+          showFeedback("Debe estar logeado para añadir al backlog.")
+          throw new Error(`Error: ${response.status}`);
+        };
+        return 
     } catch (error) {
         console.error("Error en addGameToBacklogAPI:", error);
         throw error; 
@@ -306,19 +306,23 @@ async function setupActionButtons(gameId, gameName) {
     playedBtn.addEventListener('click', async () => {
       try {
        // toggle visual
-        playedBtn.classList.toggle('active');
+       playedBtn.classList.toggle('active');
         const isPlayed = playedBtn.classList.contains('active');
         // enviar estado al backend
-        await fetch('/listas', {
+        const response = await fetch('/listas', {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ juego: gameIdint, funcion: "played" })
         });
+        if (!response.ok) {
+          playedBtn.classList.remove('active');
+          showFeedback("Debe estar logeado para marcar como jugado.")
+          throw new Error(`Error: ${response.status}`);
+        }
       } catch (err) {
         console.error('Error toggling played:', err);
         // revert visual on error
-        playedBtn.classList.toggle('active');
       }
     });
   }
@@ -328,15 +332,19 @@ async function setupActionButtons(gameId, gameName) {
       try {
         likeBtn.classList.toggle('active');
         const isLiked = likeBtn.classList.contains('active');
-       await fetch('/listas', {
+       const response = await fetch('/listas', {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ juego: gameIdint, funcion: "like"})
        });
+       if (!response.ok) {
+          likeBtn.classList.remove('active');
+          showFeedback("Debe estar logeado para marcar como gustado.")
+          throw new Error(`Error: ${response.status}`);
+        }
       } catch (err) {
         console.error('Error toggling like:', err);
-        likeBtn.classList.toggle('active');
       }
     });
   }
@@ -353,9 +361,9 @@ async function setupActionButtons(gameId, gameName) {
         showFeedback(message);
 
         backlogButton.classList.remove('loading');
-        backlogButton.classList.add('added');
+        backlogButton.classList.toggle('added');
 
-        // despachar evento custom por si hay listeners adicionales
+        
         backlogButton.dispatchEvent(new CustomEvent('backlog:added', { detail: { message } }));
       } catch (error) {
         console.error('Error al añadir a backlog:', error);
@@ -364,7 +372,6 @@ async function setupActionButtons(gameId, gameName) {
       }
     });
   }
-  actualizarBotonesEstado(gameIdint);
 }
 
 async function actualizarBotonesEstado(gameIdint) {
