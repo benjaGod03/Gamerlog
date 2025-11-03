@@ -452,13 +452,18 @@ app.MapGet("/cargarReviews", async (HttpContext context) =>
     await context.Response.WriteAsync(JsonSerializer.Serialize(reviews));
 });
 
-app.MapGet("/me", (HttpContext ctx) =>
+app.MapGet("/me", async (HttpContext ctx) =>
 {
     if (ctx.User?.Identity?.IsAuthenticated == true)
     {
         var name = ctx.User.FindFirstValue(ClaimTypes.Name) ?? ctx.User.Identity?.Name;
         var email = ctx.User.FindFirstValue(ClaimTypes.Email);
-        return Results.Json(new { authenticated = true, usuario = name, email = email });
+        using var conn1 = new SqlConnection(connectionString);
+        await conn1.OpenAsync();
+        using var cmd1 = new SqlCommand("SELECT Foto FROM Usuarios WHERE Correo = @correo", conn1);
+        cmd1.Parameters.AddWithValue("@correo", email);
+        var fotoPath = await cmd1.ExecuteScalarAsync();
+        return Results.Json(new { authenticated = true, usuario = name, email = email, urlFoto = fotoPath });
     }
     return Results.Json(new { authenticated = false });
 });
@@ -681,8 +686,14 @@ app.MapGet("/EstadoBotones", async (HttpContext context) =>
     var email = context.User.FindFirstValue(ClaimTypes.Email);
     if (string.IsNullOrEmpty(email))
     {
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("No autenticado");
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new
+        {
+            pendiente = false,
+            jugado = false,
+            like = false
+        }))
+        ;
         return;
     }
 
