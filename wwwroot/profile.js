@@ -223,6 +223,7 @@ async function displayBacklog(gameList) {
                     <div class="stats">
                         <span>✰ ${gamedet.PromCalificacion}</span>
                         <span>💬 ${gamedet.CantidadResenas || 0}</span>
+                        <span>♡ ${gamedet.CantidadLikes || 0}</span>
                     </div>
                     <div class="game-title">${gamedet.name}</div>
                 `;
@@ -302,6 +303,7 @@ async function displayPlayed(gameList) {
                     <div class="stats">
                         <span>✰ ${gamedet.PromCalificacion}</span>
                         <span>💬 ${gamedet.CantidadResenas || 0}</span>
+                        <span>♡ ${gamedet.CantidadLikes || 0}</span>
                     </div>
                     <div class="game-title">${gamedet.name}</div>
                 `;
