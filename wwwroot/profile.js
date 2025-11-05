@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const perfilBio = document.getElementById('perfilBio');
   const perfilLocation = document.getElementById('perfilLocation');
 
-  // Cargar datos de perfil desde backend (endpoint /profile)
+  // cargar datos de perfil desde backend 
   try {
     const resp = await fetch('/perfil', { credentials: 'same-origin' });
     if (resp.ok) {
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Mostrar preview local inmediato
+      // mostrar preview local inmediato
       const reader = new FileReader();
       reader.onload = (e) => {
         if (fotoPerfil) fotoPerfil.src = e.target.result;
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       reader.readAsDataURL(file);
 
-      // Subir al server (incluir cookies)
+      // subir al server (incluir cookies)
       const form = new FormData();
       form.append('foto', file);
 
@@ -196,7 +196,7 @@ async function displayBacklog(gameList) {
         return;
     }
 
-    listContainer.innerHTML = ''; // Limpia el "Cargando..."
+    listContainer.innerHTML = ''; // saca el "Cargando..."
     if (!gameList || gameList.length === 0) {
         listContainer.innerHTML = '<li>Your backlog is empty.</li>';
         return;
@@ -214,10 +214,10 @@ async function displayBacklog(gameList) {
 
             const gamedet = await response.json(); 
 
-            // Crea el elemento <li>
+            // crea el elemento <li>
             const gameItem = document.createElement('li');
             gameItem.className = 'games';
-             // Usa el nombre de los detalles
+             // usa el nombre de los detalles
             gameItem.innerHTML = `
                     <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
                     <div class="stats">
@@ -231,7 +231,7 @@ async function displayBacklog(gameList) {
 
         } catch (error) {
             console.error(`Error al obtener detalles del juego ${gameId}:`, error);
-            // Opcional: añade un item de error
+            // opcional: añade un item de error
             const errorItem = document.createElement('li');
             errorItem.textContent = `Error al cargar juego ${gameId}`;
             errorItem.className = 'games';
@@ -245,7 +245,7 @@ function initializeAllScrollLists() {
     const allWrappers = document.querySelectorAll('.list-wrapper');
 
     allWrappers.forEach(wrapper => {
-        const listElement = wrapper.querySelector('.list ul'); // Busca el <ul> dentro de .list
+        const listElement = wrapper.querySelector('.list ul'); // busca el <ul> dentro de .list
         const scrollLeftBtn = wrapper.querySelector('.scroll-btn.left');
         const scrollRightBtn = wrapper.querySelector('.scroll-btn.right');
 
@@ -275,7 +275,7 @@ async function displayPlayed(gameList) {
         return;
     }
 
-    listContainer1.innerHTML = ''; // Limpia el "Cargando..."
+    listContainer1.innerHTML = ''; // limpia el "Cargando..."
     if (!gameList || gameList.length === 0) {
         listContainer1.innerHTML = '<li>Your backlog is empty.</li>';
         return;
@@ -293,10 +293,9 @@ async function displayPlayed(gameList) {
 
             const gamedet = await response.json(); 
 
-            // Crea el elemento <li>
             const gameItem = document.createElement('li');
             gameItem.className = 'games';
-            gameItem.textContent = gamedet.name; // Usa el nombre de los detalles
+            gameItem.textContent = gamedet.name; // usa el nombre de los detalles
             
             gameItem.innerHTML = `
                     <img src="${gamedet.background_image || 'images/img.jpeg'}" alt="${gamedet.name}" class="game-image">
@@ -311,7 +310,6 @@ async function displayPlayed(gameList) {
 
         } catch (error) {
             console.error(`Error al obtener detalles del juego ${gameId}:`, error);
-            // Opcional: añade un item de error
             const errorItem = document.createElement('li');
             errorItem.textContent = `Error al cargar juego ${gameId}`;
             errorItem.className = 'games';
@@ -347,7 +345,6 @@ async function getPlayedFromAPI() {
         }
         
         const data = await response.json();
-        // Asume que el backend devuelve { success: true, data: [juego1, juego2] }
         return data
 
     } catch (error) {
