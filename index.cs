@@ -10,6 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para AddCookie
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments;
+using BCrypt.Net;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,49 +66,50 @@ app.MapPost("/login", async (HttpContext context) =>
         await connection.OpenAsync();
 
         var command = new SqlCommand(
-            "SELECT COUNT(*) FROM Usuarios WHERE Usuario = @usuario AND Contrasena = @contrasena",
+            "SELECT Contrasena, Correo FROM Usuarios WHERE Usuario = @usuario",
             connection
         );
         command.Parameters.AddWithValue("@usuario", data.Usuario);
-        command.Parameters.AddWithValue("@contrasena", data.Contrasena);
 
-        int count = (int)await command.ExecuteScalarAsync();
+        string hashGuardado = null;
+        string email = null;
+        bool esContrasenaValida = false;
 
-        var command1 = new SqlCommand(
-            "SELECT Correo FROM Usuarios WHERE Usuario = @usuario AND Contrasena = @contrasena",
-            connection
-        );
-
-        command1.Parameters.AddWithValue("@usuario", data.Usuario);
-        command1.Parameters.AddWithValue("@contrasena", data.Contrasena);
-        var email = (string)await command1.ExecuteScalarAsync();
-
-        if (!string.IsNullOrEmpty(email))
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync()) // Si el usuario existe
         {
-            // 2. CREAR LAS CLAIMS (Identidad del usuario)
+            hashGuardado = reader.GetString(0);
+            email = reader.GetString(1);
+        }
+        reader.Close();
+
+        if (hashGuardado != null)
+        {
+            esContrasenaValida = BCrypt.Net.BCrypt.Verify(data.Contrasena, hashGuardado);
+        }
+
+        if (esContrasenaValida)
+        {
             var claims = new List<Claim>
-        {
-            // ClaimTypes.Name es el identificador principal para el nombre de usuario
-            new Claim(ClaimTypes.Name, data.Usuario), 
-            // ClaimTypes.Email es estándar para el correo
-            new Claim(ClaimTypes.Email, email),
-            // Puedes agregar un Claim para el rol aquí si lo obtuvieras de la DB
-        };
+            {
+                new Claim(ClaimTypes.Name, data.Usuario), 
+                new Claim(ClaimTypes.Email, email), // Usamos el email de la base de datos
+            };
 
             var claimsIdentity = new ClaimsIdentity(
                 claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
             var authProperties = new AuthenticationProperties
             {
-                // IsPersistent = false: La cookie es de sesión (se borra al cerrar el navegador)
                 IsPersistent = false,
             };
 
-            // 3. ESTABLECER LA AUTENTICACIÓN (Firma la cookie)
+            
             await context.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
+            
             context.Response.StatusCode = 200;
             await context.Response.WriteAsync("OK");
             return;
@@ -129,6 +131,7 @@ app.MapPost("/register", async (HttpContext context) =>
 
     if (data != null)
     {
+        string hashDeContrasena = BCrypt.Net.BCrypt.HashPassword(data.Contrasena);
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
@@ -137,7 +140,7 @@ app.MapPost("/register", async (HttpContext context) =>
             connection
         );
         checkCommand.Parameters.AddWithValue("@usuario", data.Usuario);
-        checkCommand.Parameters.AddWithValue("@correo", data.Email); // Asumiendo que el correo es el mismo que el usuario
+        checkCommand.Parameters.AddWithValue("@correo", data.Email); 
 
         int userExists = (int)await checkCommand.ExecuteScalarAsync();
         if (userExists > 0)
@@ -152,7 +155,7 @@ app.MapPost("/register", async (HttpContext context) =>
             connection
         );
         insertCommand.Parameters.AddWithValue("@usuario", data.Usuario);
-        insertCommand.Parameters.AddWithValue("@contrasena", data.Contrasena);
+        insertCommand.Parameters.AddWithValue("@contrasena", hashDeContrasena);
         insertCommand.Parameters.AddWithValue("@correo", data.Email);
         Console.WriteLine($"Usuario: {data?.Usuario} contraseña: {data?.Contrasena} correo: {data?.Email}");
 
@@ -202,11 +205,11 @@ app.MapGet("/games", async (HttpContext context) =>
         var paramNames = ids.Select((_, i) => $"@id{i}").ToArray();
         var inClause = string.Join(", ", paramNames);
         var sql = $@"
-            SELECT Juego, Cantidad, Promedio
+            SELECT Juego, Cantidad, Promedio, Likes
             FROM Puntuaciones
             WHERE Juego IN ({inClause});
         ";
-        var aggregates = new Dictionary<int, (int count, double avg)>();
+        var aggregates = new Dictionary<int, (int count, double avg, int lik)>();
         using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync();
         using var cmd = new SqlCommand(sql, conn);
@@ -218,7 +221,8 @@ app.MapGet("/games", async (HttpContext context) =>
             var juego = Convert.ToInt32(rdr.GetValue(0));
             var cnt = rdr.IsDBNull(1) ? 0 : Convert.ToInt32(rdr.GetValue(1));
             var avg = rdr.IsDBNull(2) ? 0.0 : Convert.ToDouble(rdr.GetValue(2));
-            aggregates[juego] = (cnt, avg);
+            var lik = rdr.IsDBNull(3) ? 0 : Convert.ToInt32(rdr.GetValue(3));
+            aggregates[juego] = (cnt, avg, lik);
         }
 
         foreach (var item in results)
@@ -231,12 +235,14 @@ app.MapGet("/games", async (HttpContext context) =>
                     item["PromCalificacion"] = Math.Round(ag.avg, 1);
                     // Si quieres que la vista use preferentemente rating local cuando exista:
                     item["displayRating"] = ag.count > 0 ? ag.avg : (item["rating"]?.GetValue<double?>() ?? 0.0);
+                    item["CantidadLikes"] = ag.lik;
                 }
                 else
                 {
                     item["CantidadResenas"] = 0;
                     item["PromCalificacion"] = 0.0;
                     item["displayRating"] = item["rating"]?.GetValue<double?>() ?? 0.0;
+                    item["CantidadLikes"] = 0;
                 }
 
             }
@@ -306,16 +312,16 @@ app.MapGet("/game", async (HttpContext context) =>
 {
     // 1. OBTENER EL USUARIO LOGUEADO
     // El middleware de autenticación ya llenó el HttpContext.User con los Claims.
-    var nombreUsuario = context.User.FindFirstValue(ClaimTypes.Email);
-    
+    var email = context.User.FindFirstValue(ClaimTypes.Email);
+    var usuario = context.User.FindFirstValue(ClaimTypes.Name);
     Console.WriteLine("--- NUEVA RESEÑA RECIBIDA ---");
-    Console.WriteLine($"Usuario logueado (Claim): {nombreUsuario}");
+    Console.WriteLine($"Usuario logueado (Claim): {email}");
     Console.WriteLine($"Texto de la Reseña (DTO): {resenaDto.Texto}");
     Console.WriteLine($"ID del Juego (DTO): {resenaDto.Juego}");
     Console.WriteLine($"rating (DTO): {resenaDto.Rating}");
     Console.WriteLine("------------------------------");
     // Esto no debería pasar si [Authorize] funciona, pero es buena práctica verificar
-    if (string.IsNullOrEmpty(nombreUsuario))
+    if (string.IsNullOrEmpty(email))
     {
         return Results.Unauthorized(); 
     }
@@ -325,14 +331,13 @@ app.MapGet("/game", async (HttpContext context) =>
         return Results.BadRequest("Faltan datos de la reseña.");
     }
 
-    // 2. PREPARAR DATOS PARA DB
-    var fechaActual = DateTime.UtcNow; // Mejor usar UTC en el servidor
+    
+    DateTime fechaUtc = DateTime.UtcNow;
+    TimeZoneInfo zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("Argentina Standard Time");
+    DateTime fechaActual = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
 
-    // ******************************************************************
-    // ** LÓGICA DE GUARDADO EN BASE DE DATOS **
-    // ******************************************************************
     Console.WriteLine("--- NUEVA RESEÑA RECIBIDA ---");
-    Console.WriteLine($"Usuario logueado (Claim): {nombreUsuario}");
+    Console.WriteLine($"Usuario logueado (Claim): {email}");
     Console.WriteLine($"Texto de la Reseña (DTO): {resenaDto.Texto}");
     Console.WriteLine($"ID del Juego (DTO): {resenaDto.Juego}");
     Console.WriteLine($"Fecha de Registro (Server UTC): {fechaActual}");
@@ -349,7 +354,7 @@ app.MapGet("/game", async (HttpContext context) =>
     );
     command.Parameters.AddWithValue("@resena", resenaDto.Texto);
     command.Parameters.AddWithValue("@juego", resenaDto.Juego);
-    command.Parameters.AddWithValue("@creador", nombreUsuario); // Usamos el nombre del Claim
+    command.Parameters.AddWithValue("@creador", email); // Usamos el nombre del Claim
     command.Parameters.AddWithValue("@fecha", fechaActual);
     command.Parameters.AddWithValue("@calificacion", resenaDto.Rating); // Nuevo parámetro para el rating
 
@@ -359,8 +364,8 @@ app.MapGet("/game", async (HttpContext context) =>
     checkCmd.Parameters.AddWithValue("@juego", resenaDto.Juego);
     var existsObj = await checkCmd.ExecuteScalarAsync();
     int exists = Convert.ToInt32(existsObj);
-    
-    if(exists == 0)
+
+    if (exists == 0)
     {
         var command2 = new SqlCommand(
             "INSERT INTO Puntuaciones (Juego, Promedio, Cantidad) VALUES (@juego, @promedio, @cantidad)",
@@ -395,18 +400,24 @@ app.MapGet("/game", async (HttpContext context) =>
 
         await command3.ExecuteNonQueryAsync();
     }
-    // 3. RESPUESTA EXITOSA
-    // Devolvemos los datos finales (incluyendo los que generó el servidor)
+
+    var command4 = new SqlCommand(
+        "SELECT Foto FROM Usuarios WHERE Correo = @correo",
+        connection
+    );
+    command4.Parameters.AddWithValue("@correo", email);
+    var foto = await command4.ExecuteScalarAsync();
     return Results.Ok(new
     {
         Texto = resenaDto.Texto,
         JuegoId = resenaDto.Juego,
-        Usuario = nombreUsuario,
+        Usuario = usuario,
         Fecha = fechaActual.ToString("o"), // "o" es formato ISO8601, fácil de leer en JS
-        Rating = resenaDto.Rating // Nuevo campo para el rating
+        Rating = resenaDto.Rating, // Nuevo campo para el rating
+        Foto = foto == DBNull.Value ? null : (string)foto
     });
     
-}); // Asegura que solo usuarios autenticados puedan acceder  
+});
 
 //Cargar Reseñas al abrir un juego
 app.MapGet("/cargarReviews", async (HttpContext context) =>
@@ -456,13 +467,24 @@ app.MapGet("/me", async (HttpContext ctx) =>
 {
     if (ctx.User?.Identity?.IsAuthenticated == true)
     {
-        var name = ctx.User.FindFirstValue(ClaimTypes.Name) ?? ctx.User.Identity?.Name;
+        string fotoPath = null;
+        string name = null;
         var email = ctx.User.FindFirstValue(ClaimTypes.Email);
         using var conn1 = new SqlConnection(connectionString);
         await conn1.OpenAsync();
-        using var cmd1 = new SqlCommand("SELECT Foto FROM Usuarios WHERE Correo = @correo", conn1);
+        using var cmd1 = new SqlCommand("SELECT Foto, Usuario FROM Usuarios WHERE Correo = @correo", conn1);
         cmd1.Parameters.AddWithValue("@correo", email);
-        var fotoPath = await cmd1.ExecuteScalarAsync();
+        using var reader1 = await cmd1.ExecuteReaderAsync();
+        if (await reader1.ReadAsync())
+        {
+        // 3. Ahora que estás en la fila, leé las columnas
+        // Usar GetOrdinal es más seguro que usar índices (0, 1)
+        int fotoOrdinal = reader1.GetOrdinal("Foto");
+        int usuarioOrdinal = reader1.GetOrdinal("Usuario");
+
+        fotoPath = reader1.IsDBNull(fotoOrdinal) ? null : reader1.GetString(fotoOrdinal);
+        name = reader1.IsDBNull(usuarioOrdinal) ? null : reader1.GetString(usuarioOrdinal);
+        }
         return Results.Json(new { authenticated = true, usuario = name, email = email, urlFoto = fotoPath });
     }
     return Results.Json(new { authenticated = false });
@@ -631,6 +653,34 @@ app.MapPost("/listas", async (HttpContext context) =>
 
         await command.ExecuteNonQueryAsync();
 
+        if (funcion == "like")
+        {
+            SqlCommand command1;
+            command1 = new SqlCommand("Select Count(*) From Listas where Juego=@juego and Lik=1", connection);
+            command1.Parameters.AddWithValue("@juego", req.Juego);
+            int likes = (int)await command1.ExecuteScalarAsync();
+            SqlCommand check;
+            check = new SqlCommand("SELECT COUNT(1) FROM Puntuaciones WHERE Juego = @juego", connection);
+            check.Parameters.AddWithValue("@juego", req.Juego);
+            int exist1 = (int)await check.ExecuteScalarAsync();
+            if (exist1 == 0)
+            {
+                SqlCommand command2;
+                command2 = new SqlCommand("INSERT INTO Puntuaciones (Juego, Promedio, Cantidad, Likes) VALUES (@Juego, 0, 0, @likes)", connection);
+                command2.Parameters.AddWithValue("@likes", likes);
+                command2.Parameters.AddWithValue("@juego", req.Juego);
+                await command2.ExecuteNonQueryAsync();
+            }
+            else
+            {
+                SqlCommand command2;
+                command2 = new SqlCommand("Update Puntuaciones set Likes=@likes where Juego=@juego", connection);
+                command2.Parameters.AddWithValue("@likes", likes);
+                command2.Parameters.AddWithValue("@juego", req.Juego);
+                await command2.ExecuteNonQueryAsync();
+            }
+        }
+
         return Results.Ok();
     }
     else
@@ -669,6 +719,34 @@ app.MapPost("/listas", async (HttpContext context) =>
         command.Parameters.AddWithValue("@juego", req.Juego);
 
         await command.ExecuteNonQueryAsync();
+
+        if (funcion == "like")
+        {
+            SqlCommand command1;
+            command1 = new SqlCommand("Select Count(*) From Listas where Juego=@juego and Lik=1", connection);
+            command1.Parameters.AddWithValue("@juego", req.Juego);
+            int likes = (int)await command1.ExecuteScalarAsync();
+            SqlCommand check;
+            check = new SqlCommand("SELECT COUNT(1) FROM Puntuaciones WHERE Juego = @juego", connection);
+            check.Parameters.AddWithValue("@juego", req.Juego);
+            int exist1 = (int)await check.ExecuteScalarAsync();
+            if (exist1 == 0)
+            {
+                SqlCommand command2;
+                command2 = new SqlCommand("INSERT INTO Puntuaciones (Juego, Promedio, Cantidad, Likes) VALUES (@Juego, 0, 0, @likes)", connection);
+                command2.Parameters.AddWithValue("@likes", likes);
+                command2.Parameters.AddWithValue("@juego", req.Juego);
+                await command2.ExecuteNonQueryAsync();
+            }
+            else
+            {
+                SqlCommand command2;
+                command2 = new SqlCommand("Update Puntuaciones set Likes=@likes where Juego=@juego", connection);
+                command2.Parameters.AddWithValue("@likes", likes);
+                command2.Parameters.AddWithValue("@juego", req.Juego);
+                await command2.ExecuteNonQueryAsync();
+            }
+        }
 
         return Results.Ok();
     }
@@ -846,6 +924,7 @@ app.MapPost("/perfil/update", async (HttpContext context) =>
     cmd.Parameters.AddWithValue("@valor", payload.Valor);
     cmd.Parameters.AddWithValue("@correo", email);
     var rows = await cmd.ExecuteNonQueryAsync();
+
 
     return rows > 0 ? Results.Ok() : Results.StatusCode(500);
 });
