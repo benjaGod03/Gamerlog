@@ -17,9 +17,10 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background: #1F192B;
+  background-image: url("../images/Wallpaper2.png"); 
+  background-repeat: no-repeat;
+  background-size: cover;
   color: #B0B0B5;
-  min-height: 100vh;
   overflow-x: hidden;
 }
 
@@ -253,7 +254,7 @@ body {
 .container {
 
   margin: 0 50px;
-  padding-top: 80px;
+  padding-top: 50px;
   padding-bottom: 2em;
   padding-left: 2em;
   padding-right: 2em;
@@ -371,6 +372,7 @@ body {
   grid-template-columns: minmax(500px, 1.5fr) 2fr 250px;
   gap: 30px;
   margin: 2em;
+  margin-top: -25px;
   min-height: 85vh;
 }
 
@@ -857,11 +859,6 @@ body {
   color: #b3b3b3;
 }
 
-.ubicacion {
-  font-size: 0.9em;
-  color: #888;
-}
-
 
 .juegos-list {
   margin-top: 25px;
@@ -938,10 +935,26 @@ body {
   cursor: text;
   border-bottom: 1px dashed transparent;
 }
+.ubi-container{
+  display: flex;
+  align-items: center;  
+  gap: 1px;
+}
+
+.icono-ubicacion{
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.ubicacion{
+  margin: 0;
+  font-size: 0.9em;
+  color: #888;
+}
 
 #feedbackMessage {
   opacity: 0; 
-  color: #150043;  /* Un color verde de éxito */
+  color: #A176FF;   /* Un color verde de éxito */
   font-weight: bold;
   text-align: center;
   margin-top: 15px;
@@ -952,6 +965,41 @@ body {
   opacity: 1;
 }
 
+#registerFeedback {
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    display: none; /* Oculto hasta que tenga contenido */
+}
+
+.feedback-success {
+    display: block; /* Lo hace visible */
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Clase para mensajes de ERROR (fondo rojo) */
+.feedback-error {
+    display: block; /* Lo hace visible */
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.toggle-pass {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #5A4C66;
+    z-index: 2;
+}
 
 /* =============================== */
 /* 0.5 Menu hambuerguesa */
