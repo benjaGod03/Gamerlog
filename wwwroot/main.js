@@ -21,7 +21,7 @@ function actualizarEscenario(usuario, urlFoto) {
             <span class="nav-username">${usuario}</span>
         `;
     } else {
-        // Usuario no logueado
+        // usuario no logueado
         loginBtn.style.display = 'inline-block';
         registerBtn.style.display = 'inline-block';
         userDisplay.style.display = 'none';
@@ -58,7 +58,7 @@ async function cargarJuegos() {
     const searchInput = document.getElementById('searchInput');
 
     listTitle.textContent = "Popular games"; 
-    btnVolver.style.display = 'none';           // Oculta el botón "Volver"
+    btnVolver.style.display = 'none';           // ocultar el botón "Volver"
     searchInput.value = '';
 
     gamesList.innerHTML = "<p>Loading popular games...</p>";
@@ -101,18 +101,17 @@ async function ejecutarBusqueda(query) {
     const gamesList = document.getElementById('gamesList');
     const btnVolver = document.getElementById('btnVolver');
 
-    // Comprobamos que estamos en la página de inicio
+    // comprobamos que estamos en la página de inicio
     if (!listTitle || !gamesList || !btnVolver) {
         console.error("ejecutarBusqueda() solo se puede ejecutar en index.html");
         return;
     }
 
-    // Mostramos un estado de "Cargando"
+    // mostramos un estado de "Cargando"
     listTitle.textContent = `Searching: "${query}"...`;
     gamesList.innerHTML = "<p>Loading results...</p>";
     btnVolver.style.display = 'none'; // Ocultamos el botón "Volver"
-
-    // Esta es la lógica que ya tenías, ahora dentro de una función
+ 
     const response = await fetch(`/games?search=${encodeURIComponent(query)}`);
 
     if (response.ok) {
@@ -185,10 +184,17 @@ document.getElementById('loginForm').onsubmit = async function(e) {
         document.getElementById('loginForm').style.display = 'none';
         
     } else {
-        // Error de login
-        // Si tienes un div con id="loginError", muéstralo aquí
-        // document.getElementById('loginError').style.display = 'block';
-        alert("Usuario o contraseña incorrectos");
+        Swal.fire({
+            icon: 'error',
+            title: 'Usuario o contraseña incorrectos',
+            text: 'Verifica tus datos e inténtalo de nuevo.',
+            background: '#f3e9ff',        
+            color: '#4b0082',             
+            iconColor: '#d33',           
+            confirmButtonColor: '#9b5de5',
+            confirmButtonText: 'Aceptar',
+            customClass: { popup: 'swal-custom' }
+        });
     }
 
 };
@@ -290,13 +296,13 @@ if (cerrarSesion) {
   });
 }
 
-// Alternar el menú al hacer clic en el usuario
+// alternar el menú al hacer clic en el usuario
 userDisplay.addEventListener('click', (e) => {
     e.stopPropagation(); // evita que el click cierre el menú inmediatamente
     menuOptions.classList.toggle('show');
 });
 
-// Cerrar el menú si se hace clic fuera
+// cerrar el menú si se hace clic fuera
 window.addEventListener('click', (e) => {
     if (!userDisplay.contains(e.target)) {
         menuOptions.classList.remove('show');
@@ -304,7 +310,7 @@ window.addEventListener('click', (e) => {
 });
 
 
-// Cerrar sesión
+// cerrar sesión
 cerrarSesion.addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('usuario');
@@ -318,8 +324,6 @@ function showFeedback(message) {
 
   feedback.textContent = message;
   feedback.classList.add('show'); 
-
-  // Oculta el mensaje después de 3 segundos
   setTimeout(() => {
     feedback.classList.remove('show');
     setTimeout(() => { feedback.textContent = ''; }, 300); 
