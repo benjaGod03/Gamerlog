@@ -277,19 +277,21 @@ app.MapGet("/game", async (HttpContext context) =>
         using var conn = new SqlConnection(connectionString);
         await conn.OpenAsync();
 
-        using var aggCmd = new SqlCommand("SELECT Cantidad, Promedio FROM Puntuaciones WHERE Juego = @juego", conn);
+        using var aggCmd = new SqlCommand("SELECT Cantidad, Promedio,Likes FROM Puntuaciones WHERE Juego = @juego", conn);
         aggCmd.Parameters.AddWithValue("@juego", int.Parse(id));
         using var aggR = await aggCmd.ExecuteReaderAsync();
-        int localCount = 0; double localAvg = 0.0;
+        int localCount = 0; double localAvg = 0.0; int likes=0;
         if (await aggR.ReadAsync())
         {
             localCount = aggR.IsDBNull(0) ? 0 : Convert.ToInt32(aggR.GetValue(0));
-            localAvg = aggR.IsDBNull(1) ? 0.0 : Convert.ToDouble(aggR.GetValue(1));
+            localAvg = aggR.IsDBNull(1) ? 0.0 : Convert.ToDouble(aggR.GetValue(1)); 
+            likes = aggR.IsDBNull(2) ? 0 : Convert.ToInt32(aggR.GetValue(2));
         }
         aggR.Close();
 
         gameNode["CantidadResenas"] = localCount;
-        gameNode["PromCalificacion"] =  Math.Round(localAvg,1);
+        gameNode["PromCalificacion"] = Math.Round(localAvg, 1);
+        gameNode["CantidadLikes"] = likes;
         
         context.Response.ContentType = "application/json";
         await context.Response.WriteAsync(gameNode.ToJsonString());
