@@ -43,7 +43,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         // rating y reviews
         document.getElementById('gameRating').textContent = `✰ ${game.PromCalificacion || 0}`;
         document.getElementById('gameReviews').textContent = `💬 ${game.CantidadResenas || 0}`;
-        document.getElementById('gameReviews').textContent = `♡ ${game.CantidadLikes|| 0}`;
+        document.getElementById('gameLikes').textContent = `♡ ${game.CantidadLikes|| 0}`;
 
         // estrellas 
        const stars = document.getElementById('gameStars');
