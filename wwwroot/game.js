@@ -162,6 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   setupScrollToReview();
+
+  const btnVolver = document.getElementById('btnVolver');
+    
+    if (btnVolver) {
+        btnVolver.addEventListener('click', () => {
+            history.back();
+        });
+    }
 });
 
 async function agregarReseña() {
@@ -292,6 +300,12 @@ async function setupActionButtons(gameId, gameName) {
   const feedback = document.getElementById('feedbackMessage');
   let gameIdint = parseInt(gameId, 10);
 
+    function actualizarTextoBacklog(estaAñadido) {
+    if (backlogButton) {
+      // Cambiamos el texto Y el emoji
+      backlogButton.textContent = estaAñadido ? "➖ Quitar de backlog" : "➕ Añadir a backlog";
+    }
+  }
   const estado = await actualizarBotonesEstado(gameIdint);
   if (playedBtn) {
     if (estado.played) playedBtn.classList.add('active'); else playedBtn.classList.remove('active');
@@ -300,14 +314,23 @@ async function setupActionButtons(gameId, gameName) {
     if (estado.liked) likeBtn.classList.add('active'); else likeBtn.classList.remove('active');
   }
   if (backlogButton) {
-    if (estado.pendiente) backlogButton.classList.add('added'); else backlogButton.classList.remove('added');
+    if (estado.pendiente) {
+      backlogButton.classList.add('added'); 
+      actualizarTextoBacklog(true);
+    }else {
+      backlogButton.classList.remove('added');
+      actualizarTextoBacklog(false);
   }
+}
   if (playedBtn) {
     playedBtn.addEventListener('click', async () => {
       try {
        // toggle visual
        playedBtn.classList.toggle('active');
         const isPlayed = playedBtn.classList.contains('active');
+        if (isPlayed && backlogButton) {
+            backlogButton.classList.remove('added'); // desactiva visualmente el backlog
+        }
         // enviar estado al backend
         const response = await fetch('/listas', {
           method: 'POST',
@@ -316,9 +339,14 @@ async function setupActionButtons(gameId, gameName) {
           body: JSON.stringify({ juego: gameIdint, funcion: "played" })
         });
         if (!response.ok) {
-          playedBtn.classList.remove('active');
+          playedBtn.classList.toggle('active');
           showFeedback("Debe estar logeado para marcar como jugado.")
           throw new Error(`Error: ${response.status}`);
+        }
+        if (isPlayed && backlogButton) {
+            backlogButton.classList.remove('added');
+            // Llama a la función que creamos antes
+            actualizarTextoBacklog(false); // Pone el texto "➕ Añadir a backlog"
         }
       } catch (err) {
         console.error('Error toggling played:', err);
@@ -362,7 +390,13 @@ async function setupActionButtons(gameId, gameName) {
 
         backlogButton.classList.remove('loading');
         backlogButton.classList.toggle('added');
+        const isAdded = backlogButton.classList.contains('added');
+        
+        actualizarTextoBacklog(isAdded);
 
+        if (isAdded && playedBtn) {
+            playedBtn.classList.remove('active'); 
+        }
         
         backlogButton.dispatchEvent(new CustomEvent('backlog:added', { detail: { message } }));
       } catch (error) {

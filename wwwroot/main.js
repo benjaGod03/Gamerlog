@@ -57,11 +57,11 @@ async function cargarJuegos() {
 
     const searchInput = document.getElementById('searchInput');
 
-    listTitle.textContent = "Juegos Populares"; // O tu título original
+    listTitle.textContent = "Popular games"; 
     btnVolver.style.display = 'none';           // Oculta el botón "Volver"
     searchInput.value = '';
 
-    gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
+    gamesList.innerHTML = "<p>Loading popular games...</p>";
 
     const response = await fetch('/games?search=');
          if (response.ok) {
@@ -90,10 +90,10 @@ async function cargarJuegos() {
         });
     
          } else {
-         gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
+         gamesList.innerHTML = "<p>No popular games found.</p>";
          }
     } else {
-        gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
+        gamesList.innerHTML = "<p>Error loading popular games.</p>";
     }
 }
 async function ejecutarBusqueda(query) {
@@ -108,8 +108,8 @@ async function ejecutarBusqueda(query) {
     }
 
     // Mostramos un estado de "Cargando"
-    listTitle.textContent = `Buscando: "${query}"...`;
-    gamesList.innerHTML = "<p>Cargando resultados...</p>";
+    listTitle.textContent = `Searching: "${query}"...`;
+    gamesList.innerHTML = "<p>Loading results...</p>";
     btnVolver.style.display = 'none'; // Ocultamos el botón "Volver"
 
     // Esta es la lógica que ya tenías, ahora dentro de una función
@@ -120,7 +120,7 @@ async function ejecutarBusqueda(query) {
         gamesList.innerHTML = ""; // Limpiamos el "Cargando..."
 
         if (data.results && data.results.length > 0) {
-            listTitle.textContent = `Resultados para: "${query}"`;
+            listTitle.textContent = `Results for: "${query}"`;
             btnVolver.style.display = 'block';
             
             data.results.slice(0, 10).forEach(game => {
@@ -143,13 +143,13 @@ async function ejecutarBusqueda(query) {
                 gamesList.appendChild(gameDiv);
             });
         } else {
-            listTitle.textContent = `No se encontraron resultados para: "${query}"`;
-            gamesList.innerHTML = "<p>Intenta con otra búsqueda.</p>";
+            listTitle.textContent = `No results found for: "${query}"`;
+            gamesList.innerHTML = "<p>Try another search.</p>";
             btnVolver.style.display = 'block';
         }
     } else {
-        alert("Error al buscar juegos");
-        listTitle.textContent = "Juegos Populares"; // Restaurar título en caso de error
+        alert("Error searching for games");
+        listTitle.textContent = "Popular games"; // Restaurar título en caso de error
     }
 }
 
