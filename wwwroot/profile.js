@@ -112,7 +112,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (!resp.ok) {
         console.error('Error actualizando perfil:', resp.status, await resp.text());
-        showFeedback('Error al guardar');
+        
+        Swal.fire({
+        icon: 'error',
+        title: 'Failed to update username',
+        text: 'The username is already in use. Please try another one.',
+        background: '#f3e9ff',
+        color: '#4b0082',
+        iconColor: '#d33',            
+        confirmButtonColor: '#9b5de5',
+        confirmButtonText: 'Entendido'
+        });
         return false;
       }
       return true;
@@ -143,8 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (btnVolver) {
         btnVolver.addEventListener('click', () => {
-            
-            window.location.href = 'index.html';
+            history.back();
         });
     }
 
