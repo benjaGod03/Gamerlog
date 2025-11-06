@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     await fetchMeAndUpdate();
     const gameId = localStorage.getItem('selectedGameId');
     if (!gameId) {
-        document.body.innerHTML = "<p>No se seleccionó ningún juego.</p>";
+        document.body.innerHTML = "<p>No game was selected.</p>";
         return;
     }
 
@@ -67,7 +67,7 @@ window.addEventListener('DOMContentLoaded', async function() {
         
         setupActionButtons(gameId, game.name);
     } else {
-        document.body.innerHTML = "<p>Error al cargar los detalles del juego.</p>";
+        document.body.innerHTML = "<p>Error loading game details.</p>";
     }
 
 });
@@ -88,7 +88,7 @@ function setupSynopsisToggle() {
     // Si es más largo, lo colapsa y muestra el botón
     synopsisElement.classList.add('collapsed');
     toggleBtn.style.display = 'block';
-    toggleBtn.textContent = 'Mostrar Más'; // Asegura el texto inicial
+    toggleBtn.textContent = 'Show More'; // Asegura el texto inicial
   }
 
   // Agrega el evento de clic al botón (si se mostró)
@@ -96,11 +96,11 @@ function setupSynopsisToggle() {
     if (synopsisElement.classList.contains('collapsed')) {
       // Expande el texto
       synopsisElement.classList.remove('collapsed');
-      toggleBtn.textContent = 'Mostrar Menos';
+      toggleBtn.textContent = 'Show less';
     } else {
       // Colapsa el texto
       synopsisElement.classList.add('collapsed');
-      toggleBtn.textContent = 'Mostrar Más';
+      toggleBtn.textContent = 'Show More';
     }
   });
 }
@@ -115,7 +115,7 @@ async function addGameToBacklogAPI(gameId) {
             body: JSON.stringify({ juego: gameId, funcion: "backlog" })
         });
         if (!response.ok) {
-          showFeedback("Debe estar logeado para añadir al backlog.")
+          showFeedback("You must be logged in to add to your backlog.")
           throw new Error(`Error: ${response.status}`);
         };
         return 
@@ -183,7 +183,7 @@ async function agregarReseña() {
   console.log("Rating:", rating); // depuración
 
   if (texto === "") {
-    alert("No podés publicar una reseña vacía.");
+    alert("You cannot post an empty review.");
     return;
   }
 
@@ -214,15 +214,15 @@ async function agregarReseña() {
             reviewTextarea.value = "";
             
         } else if (response.status === 401) {
-            alert("Debes iniciar sesión para publicar una reseña.");
+            alert("You must be logged in to post a review.");
         } else {
             // manejar otros errores 
-            alert("Error al guardar la reseña en el servidor.");
+            alert("Error saving the review on the server.");
         }
 
     } catch (error) {
         console.error('Error de conexión o de red:', error);
-        alert("No se pudo conectar con el servidor. Inténtalo más tarde.");
+        alert("Could not connect to the server. Please try again later.");
     }
 }
 
@@ -241,7 +241,7 @@ function mostrarReseñaEnDOM(texto, fecha, usuario, ratingSeleccionado, urlFotoU
      // mostrar estrellas según el ratingSeleccionado actual
   const estrellasHTML = ratingSeleccionado > 0
     ? '★'.repeat(ratingSeleccionado) + '☆'.repeat(5 - ratingSeleccionado)
-    : '— sin calificación —';
+    : '— no rating —';
 
     const photoStyle = urlFotoUsuario ? `background-image: url(${urlFotoUsuario})` : '';
     nuevaReseña.innerHTML = `
@@ -283,7 +283,7 @@ async function cargarReseñas(gameID) {
             });
 
         } else if (response.status === 404) {
-            console.warn("No se encontraron reseñas para este juego.");
+            console.warn("No reviews found for this game.");
         } else {
             console.error(`Error al cargar reseñas: ${response.status}`);
         }
@@ -303,7 +303,7 @@ async function setupActionButtons(gameId, gameName) {
     function actualizarTextoBacklog(estaAñadido) {
     if (backlogButton) {
       // Cambiamos el texto Y el emoji
-      backlogButton.textContent = estaAñadido ? "➖ Quitar de backlog" : "➕ Añadir a backlog";
+      backlogButton.textContent = estaAñadido ? "➖ Remove from backlog" : "➕ Add to backlog";
     }
   }
   const estado = await actualizarBotonesEstado(gameIdint);
@@ -340,13 +340,13 @@ async function setupActionButtons(gameId, gameName) {
         });
         if (!response.ok) {
           playedBtn.classList.toggle('active');
-          showFeedback("Debe estar logeado para marcar como jugado.")
+          showFeedback("You must be logged in to mark as played.")
           throw new Error(`Error: ${response.status}`);
         }
         if (isPlayed && backlogButton) {
             backlogButton.classList.remove('added');
             // Llama a la función que creamos antes
-            actualizarTextoBacklog(false); // Pone el texto "➕ Añadir a backlog"
+            actualizarTextoBacklog(false); 
         }
       } catch (err) {
         console.error('Error toggling played:', err);
@@ -368,7 +368,7 @@ async function setupActionButtons(gameId, gameName) {
        });
        if (!response.ok) {
           likeBtn.classList.remove('active');
-          showFeedback("Debe estar logeado para marcar como gustado.")
+          showFeedback("You must be logged in to mark as liked.")
           throw new Error(`Error: ${response.status}`);
         }
       } catch (err) {
@@ -384,7 +384,7 @@ async function setupActionButtons(gameId, gameName) {
         // response esperado: { message: "..." }
         const message = response && response.message
           ? response.message.replace('{gameName}', gameName || '')
-          : 'Añadido al backlog';
+          : 'added to backlog';
 
         showFeedback(message);
 
@@ -401,7 +401,7 @@ async function setupActionButtons(gameId, gameName) {
         backlogButton.dispatchEvent(new CustomEvent('backlog:added', { detail: { message } }));
       } catch (error) {
         console.error('Error al añadir a backlog:', error);
-        showFeedback('Error: no se pudo añadir al backlog.');
+        showFeedback('Error: could not add to backlog.');
         backlogButton.classList.remove('loading');
       }
     });
