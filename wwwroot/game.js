@@ -183,7 +183,16 @@ async function agregarReseña() {
   console.log("Rating:", rating); // depuración
 
   if (texto === "") {
-    alert("You cannot post an empty review.");
+    Swal.fire({
+        icon: 'error',
+        title: 'You cannot post an empty review.',
+        text: 'Please try again.',
+        background: '#f3e9ff',
+        color: '#4b0082',
+        iconColor: '#d33',            
+        confirmButtonColor: '#9b5de5',
+        confirmButtonText: 'Entendido'
+        });
     return;
   }
 
@@ -214,10 +223,29 @@ async function agregarReseña() {
             reviewTextarea.value = "";
             
         } else if (response.status === 401) {
-            alert("You must be logged in to post a review.");
+            
+             Swal.fire({
+              icon: 'error',
+            title: 'You must be logged in to post a review.',
+            text: 'Try again later.',
+            background: '#f3e9ff',
+            color: '#4b0082',
+            iconColor: '#d33',            
+            confirmButtonColor: '#9b5de5',
+            confirmButtonText: 'Entendido'
+        });
         } else {
-            // manejar otros errores 
-            alert("Error saving the review on the server.");
+            // manejar otros errores
+            Swal.fire({
+        icon: 'error',
+        title: 'Error saving the review on the server.',
+        text: 'Try again later.',
+        background: '#f3e9ff',
+        color: '#4b0082',
+        iconColor: '#d33',            
+        confirmButtonColor: '#9b5de5',
+        confirmButtonText: 'Entendido'
+        });
         }
 
     } catch (error) {
