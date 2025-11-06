@@ -147,7 +147,7 @@ async function ejecutarBusqueda(query) {
             btnVolver.style.display = 'block';
         }
     } else {
-        alert("Error searching for games");
+        alert("An error occurred while searching for games.");
         listTitle.textContent = "Popular games"; // Restaurar título en caso de error
     }
 }
@@ -186,8 +186,8 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     } else {
         Swal.fire({
             icon: 'error',
-            title: 'Usuario o contraseña incorrectos',
-            text: 'Verifica tus datos e inténtalo de nuevo.',
+            title: 'Incorrect username or password',
+            text: 'Please check your information and try again.',
             background: '#f3e9ff',        
             color: '#4b0082',             
             iconColor: '#d33',           
@@ -244,7 +244,7 @@ window.addEventListener('DOMContentLoaded', async function() {
 async function cargarGamesSec() {
 const gamesList = document.getElementById('games-sec');
     if (!gamesList) return;
-    gamesList.innerHTML = "<p>Cargando juegos populares...</p>";
+    gamesList.innerHTML = "<p>Loading popular games...</p>";
 
     const response = await fetch('/games?search=');
     if (response.ok) {
@@ -274,10 +274,10 @@ const gamesList = document.getElementById('games-sec');
                 gamesList.appendChild(gameDiv);
             });
         } else {
-            gamesList.innerHTML = "<p>No se encontraron juegos populares.</p>";
+            gamesList.innerHTML = "<p>No popular games were found.</p>";
         }
     } else {
-        gamesList.innerHTML = "<p>Error al cargar juegos populares.</p>";
+        gamesList.innerHTML = "<p>Error loading popular games.</p>";
     }
 }
 

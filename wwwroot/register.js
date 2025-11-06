@@ -13,8 +13,8 @@ document.getElementById('registerForm').onsubmit = async function(e) {
     if (response.ok) {
     Swal.fire({
         icon: 'success',
-        title: 'Registro exitoso',
-        text: 'Tu cuenta fue creada correctamente. Ahora puedes iniciar sesión.',
+        title: 'Registration successful',
+        text: 'Your account has been created successfully. You can now sign in.',
         background: '#f3e9ff',        
         color: '#4b0082',             
         iconColor: '#9b5de5',         
@@ -27,8 +27,8 @@ document.getElementById('registerForm').onsubmit = async function(e) {
 } else {
     Swal.fire({
         icon: 'error',
-        title: 'Error en el registro',
-        text: 'Por favor, inténtalo de nuevo.',
+        title: 'Registration error',
+        text: 'The username or email is already in use. Please try again.',
         background: '#f3e9ff',
         color: '#4b0082',
         iconColor: '#d33',            
